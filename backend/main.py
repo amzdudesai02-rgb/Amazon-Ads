@@ -7,6 +7,7 @@ from typing import Dict, Optional
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 import httpx
@@ -33,6 +34,23 @@ if not OPENAI_API_KEY:
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 app = FastAPI(title="Amazon Ads AI Agent")
+
+# CORS: allow local dev plus deployed frontend.
+frontend_origin = os.getenv("FRONTEND_ORIGIN")
+allowed_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+if frontend_origin:
+    allowed_origins.append(frontend_origin)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # Initialise database and load any stored tokens into memory.
