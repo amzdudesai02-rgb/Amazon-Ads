@@ -1,0 +1,297 @@
+import json
+import os
+import time
+import urllib.parse
+from datetime import datetime, timezone
+from typing import Dict, Optional
+
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
+from pydantic import BaseModel
+import httpx
+from openai import OpenAI
+
+import db
+
+
+load_dotenv()
+
+LWA_AUTH_URL = "https://www.amazon.com/ap/oa"
+LWA_TOKEN_URL = "https://api.amazon.com/auth/o2/token"
+ADS_API_BASE = "https://advertising-api.amazon.com"
+
+LWA_CLIENT_ID = os.getenv("LWA_CLIENT_ID", "")
+LWA_CLIENT_SECRET = os.getenv("LWA_CLIENT_SECRET", "")
+LWA_REDIRECT_URI = os.getenv("LWA_REDIRECT_URI", "")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+AMAZON_ADS_PROFILE_ID = os.getenv("AMAZON_ADS_PROFILE_ID", "")
+
+if not OPENAI_API_KEY:
+    raise RuntimeError("OPENAI_API_KEY is required")
+
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+app = FastAPI(title="Amazon Ads AI Agent")
+
+
+# Initialise database and load any stored tokens into memory.
+db.init_db()
+TOKENS: Dict[str, str] = {}
+stored = db.get_tokens()
+if stored is not None:
+    if stored.access_token:
+        TOKENS["access_token"] = stored.access_token
+    if stored.refresh_token:
+        TOKENS["refresh_token"] = stored.refresh_token
+    if stored.expires_at:
+        TOKENS["expires_at"] = str(stored.expires_at.replace(tzinfo=timezone.utc).timestamp())
+
+
+@app.get("/health")
+def health() -> dict:
+    return {"status": "ok"}
+
+
+@app.get("/auth/login")
+def auth_login() -> RedirectResponse:
+    """
+    Start Login with Amazon (LWA) OAuth2 authorization code flow.
+    """
+    if not (LWA_CLIENT_ID and LWA_REDIRECT_URI):
+        raise HTTPException(
+            status_code=500,
+            detail="LWA_CLIENT_ID and LWA_REDIRECT_URI must be configured.",
+        )
+
+    params = {
+        "client_id": LWA_CLIENT_ID,
+        "scope": "advertising::campaign_management",
+        "response_type": "code",
+        "redirect_uri": LWA_REDIRECT_URI,
+        "state": "demo_state_value",
+    }
+    url = f"{LWA_AUTH_URL}?{urllib.parse.urlencode(params)}"
+    return RedirectResponse(url)
+
+
+@app.get("/auth/callback")
+async def auth_callback(code: str, state: Optional[str] = None) -> dict:
+    """
+    Handle OAuth2 callback and exchange code for tokens.
+    """
+    if not (LWA_CLIENT_ID and LWA_CLIENT_SECRET and LWA_REDIRECT_URI):
+        raise HTTPException(
+            status_code=500,
+            detail="LWA_CLIENT_ID, LWA_CLIENT_SECRET and LWA_REDIRECT_URI must be configured.",
+        )
+
+    async with httpx.AsyncClient() as http_client:
+        resp = await http_client.post(
+            LWA_TOKEN_URL,
+            data={
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": LWA_REDIRECT_URI,
+                "client_id": LWA_CLIENT_ID,
+                "client_secret": LWA_CLIENT_SECRET,
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+
+    if resp.status_code != 200:
+        raise HTTPException(status_code=400, detail=resp.text)
+
+    data = resp.json()
+    TOKENS["refresh_token"] = data.get("refresh_token", "")
+    TOKENS["access_token"] = data.get("access_token", "")
+    # Store an absolute expiry time (seconds since epoch).
+    expires_in = data.get("expires_in") or 0
+    expires_at_ts = time.time() + int(expires_in) - 60  # refresh 1 min early
+    TOKENS["expires_at"] = str(expires_at_ts)
+
+    # Persist tokens to PostgreSQL
+    db.save_tokens(
+        access_token=TOKENS["access_token"],
+        refresh_token=TOKENS["refresh_token"],
+        expires_at=datetime.fromtimestamp(expires_at_ts, tz=timezone.utc),
+    )
+
+    return {"status": "ok"}
+
+
+async def refresh_access_token() -> None:
+    """
+    Use the stored refresh token to obtain a new access token.
+    """
+    refresh_token = TOKENS.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Missing refresh token; re-authenticate.")
+
+    if not (LWA_CLIENT_ID and LWA_CLIENT_SECRET):
+        raise HTTPException(
+            status_code=500,
+            detail="LWA_CLIENT_ID and LWA_CLIENT_SECRET must be configured.",
+        )
+
+    async with httpx.AsyncClient() as http_client:
+        resp = await http_client.post(
+            LWA_TOKEN_URL,
+            data={
+                "grant_type": "refresh_token",
+                "refresh_token": refresh_token,
+                "client_id": LWA_CLIENT_ID,
+                "client_secret": LWA_CLIENT_SECRET,
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+
+    if resp.status_code != 200:
+        raise HTTPException(status_code=401, detail=f"Failed to refresh token: {resp.text}")
+
+    data = resp.json()
+    TOKENS["access_token"] = data.get("access_token", "")
+    expires_in = data.get("expires_in") or 0
+    expires_at_ts = time.time() + int(expires_in) - 60
+    TOKENS["expires_at"] = str(expires_at_ts)
+
+    db.save_tokens(
+        access_token=TOKENS["access_token"],
+        refresh_token=refresh_token,
+        expires_at=datetime.fromtimestamp(expires_at_ts, tz=timezone.utc),
+    )
+
+
+async def get_access_token() -> str:
+    """
+    Return a valid access token, refreshing it when necessary.
+    """
+    token = TOKENS.get("access_token")
+    expires_at_str = TOKENS.get("expires_at")
+
+    needs_refresh = False
+    if not token:
+        needs_refresh = True
+    elif expires_at_str:
+        try:
+            expires_at = float(expires_at_str)
+            if time.time() >= expires_at:
+                needs_refresh = True
+        except ValueError:
+            needs_refresh = True
+
+    if needs_refresh:
+        await refresh_access_token()
+        token = TOKENS.get("access_token")
+
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated with Amazon Ads.")
+
+    return token
+
+
+async def list_campaigns(profile_id: str):
+    """
+    Example Amazon Ads API wrapper: list campaigns.
+    """
+    access_token = await get_access_token()
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Amazon-Advertising-API-Scope": profile_id,
+        "Content-Type": "application/json",
+    }
+    async with httpx.AsyncClient() as http_client:
+        resp = await http_client.get(f"{ADS_API_BASE}/v2/campaigns", headers=headers)
+    resp.raise_for_status()
+    return resp.json()
+
+
+class ChatRequest(BaseModel):
+    message: str
+    profile_id: Optional[str] = None
+    intent: Optional[str] = None  # optional hint from frontend later
+
+
+class ChatResponse(BaseModel):
+    reply: str
+
+
+@app.post("/agent/chat", response_model=ChatResponse)
+async def agent_chat(body: ChatRequest) -> ChatResponse:
+    """
+    Simple AI agent endpoint powered by OpenAI.
+
+    For demo purposes:
+    - If the message mentions 'campaign', we fetch campaigns from Amazon Ads.
+    - We pass the data and the original question to the LLM to generate a reply.
+    """
+    # Basic persistence: one default user and a new session per request.
+    user_id = db.get_or_create_default_user_id()
+    session_id = db.create_chat_session(user_id=user_id, title=body.message[:80])
+    db.log_chat_message(session_id, "user", body.message)
+
+    profile_id = body.profile_id or AMAZON_ADS_PROFILE_ID
+    campaigns_data = None
+
+    if "campaign" in body.message.lower():
+        if not profile_id:
+            raise HTTPException(
+                status_code=400,
+                detail="profile_id is required to work with campaigns.",
+            )
+        try:
+            campaigns_data = await list_campaigns(profile_id)
+        except httpx.HTTPError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail=f"Error calling Amazon Ads API: {exc}",
+            )
+
+    system_prompt = (
+        "You are an assistant that helps manage Amazon Ads campaigns. "
+        "When campaign data is provided, use it to answer questions in a concise, clear way."
+    )
+
+    context_snippet = ""
+    if campaigns_data is not None:
+        # Truncate to keep the prompt small.
+        context_snippet = f"Here is JSON campaign data:\n{str(campaigns_data)[:5000]}"
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {
+            "role": "user",
+            "content": f"{body.message}\n\n{context_snippet}",
+        },
+    ]
+
+    completion = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages,
+        temperature=0.2,
+    )
+
+    reply_text = completion.choices[0].message.content
+
+    # Persist assistant reply and (optionally) a campaign snapshot.
+    db.log_chat_message(session_id, "assistant", reply_text)
+
+    if campaigns_data is not None and profile_id:
+        try:
+            raw_json = json.dumps(campaigns_data)
+            db.save_campaign_snapshot(
+                profile_id=profile_id,
+                raw_json=raw_json,
+                note=f"From message: {body.message[:80]}",
+            )
+        except TypeError:
+            # If campaigns_data is not JSON-serializable, skip snapshot.
+            pass
+
+    return ChatResponse(reply=reply_text)
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
