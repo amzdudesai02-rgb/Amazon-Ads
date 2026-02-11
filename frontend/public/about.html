@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>About – Amazon Ads AI Agent</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        margin: 0;
+        background: #f5f5f5;
+        color: #111827;
+      }
+      header {
+        background: #111827;
+        color: white;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      header a {
+        color: #e5e7eb;
+        text-decoration: none;
+        margin-left: 1rem;
+        font-size: 0.95rem;
+      }
+      header a:hover {
+        color: white;
+      }
+      main {
+        max-width: 960px;
+        margin: 2rem auto;
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        padding: 2rem;
+      }
+      h1 {
+        margin-top: 0;
+      }
+      footer {
+        text-align: center;
+        padding: 1rem 0 2rem;
+        font-size: 0.85rem;
+        color: #6b7280;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>Amazon Ads AI Agent</div>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/about.html">About</a>
+      </nav>
+    </header>
+    <main>
+      <h1>About this project</h1>
+      <p>
+        Amazon Ads AI Agent is an experimental assistant that helps advertisers
+        explore and manage their Amazon Ads campaigns using natural language.
+        It connects to Amazon Ads through Login with Amazon (LWA) and the
+        Amazon Ads API, and uses a large language model to turn your prompts
+        into useful insights and actions.
+      </p>
+      <p>
+        Typical use cases include generating campaign reports, surfacing
+        optimization ideas, and helping you scale campaigns to new markets.
+      </p>
+      <h2>How it works</h2>
+      <ul>
+        <li>You connect your Amazon Ads account via Login with Amazon.</li>
+        <li>
+          The backend securely stores the necessary tokens and retrieves
+          campaign data from the Amazon Ads API.
+        </li>
+        <li>
+          The AI model analyzes your data and your questions to generate
+          tailored responses.
+        </li>
+      </ul>
+      <h2>Contact</h2>
+      <p>
+        For support, feedback, or partnership inquiries, reach out at:
+        <strong>you@example.com</strong>.
+      </p>
+    </main>
+    <footer>
+      &copy; <span id="year"></span> Amazon Ads AI Agent.
+    </footer>
+    <script>
+      document.getElementById("year").textContent =
+        new Date().getFullYear().toString();
+    </script>
+  </body>
+  </html>
+
