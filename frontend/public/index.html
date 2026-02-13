@@ -4,127 +4,301 @@
     <meta charset="utf-8" />
     <title>Amazon Ads AI Agent</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
       :root {
-        color-scheme: light;
+        --bg: #0f172a;
+        --bg-card: #ffffff;
+        --text: #1e293b;
+        --text-muted: #64748b;
+        --accent: #f97316;
+        --accent-hover: #ea580c;
+        --border: #e2e8f0;
+        --surface: #f8fafc;
+        --radius: 12px;
+        --radius-sm: 8px;
+        --shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+        --shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
       }
+
+      * {
+        box-sizing: border-box;
+      }
+
       body {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          sans-serif;
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
         margin: 0;
-        background: #f5f5f5;
-        color: #111827;
+        background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        color: var(--text);
+        line-height: 1.6;
       }
-      header {
-        background: #111827;
+
+      .header {
+        background: var(--bg);
         color: white;
-        padding: 1rem 2rem;
+        padding: 0.875rem 1.5rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        box-shadow: var(--shadow-lg);
       }
-      header nav a {
-        color: #e5e7eb;
-        margin-left: 1rem;
+
+      .header-brand {
+        font-weight: 700;
+        font-size: 1.125rem;
+        letter-spacing: -0.02em;
+      }
+
+      .header-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .header-nav a {
+        color: #94a3b8;
         text-decoration: none;
-        font-size: 0.95rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        padding: 0.5rem 0.75rem;
+        border-radius: var(--radius-sm);
+        transition: color 0.15s, background 0.15s;
       }
-      header nav a:hover {
+
+      .header-nav a:hover {
         color: white;
+        background: rgba(255, 255, 255, 0.08);
       }
-      main {
-        max-width: 960px;
-        margin: 2rem auto;
-        background: white;
-        border-radius: 0.75rem;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-        padding: 2rem;
-      }
-      button {
-        background: #2563eb;
+
+      .btn-primary {
+        background: var(--accent);
         color: white;
         border: none;
         padding: 0.5rem 1rem;
-        border-radius: 999px;
-        cursor: pointer;
+        border-radius: var(--radius-sm);
         font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: background 0.15s, transform 0.1s;
+        font-family: inherit;
       }
-      button:hover {
-        background: #1d4ed8;
+
+      .btn-primary:hover {
+        background: var(--accent-hover);
       }
-      .row {
+
+      .btn-primary:active {
+        transform: scale(0.98);
+      }
+
+      .container {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+      }
+
+      .card {
+        background: var(--bg-card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .hero {
+        text-align: center;
+        padding: 2.5rem 1.5rem 2rem;
+      }
+
+      .hero h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0 0 0.75rem;
+        letter-spacing: -0.03em;
+        line-height: 1.3;
+      }
+
+      .hero p {
+        color: var(--text-muted);
+        font-size: 1rem;
+        margin: 0;
+        max-width: 480px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text);
+        margin: 0 0 0.5rem;
+      }
+
+      .section-desc {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        margin: 0 0 1.25rem;
+      }
+
+      .input-group {
         display: flex;
-        gap: 1rem;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .input-group label {
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--text-muted);
+      }
+
+      input[type="text"] {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 0.9375rem;
+        font-family: inherit;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+
+      input[type="text"]:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+      }
+
+      input[type="text"]::placeholder {
+        color: #94a3b8;
+      }
+
+      .chat-row {
+        display: flex;
+        gap: 0.75rem;
         margin-top: 1rem;
       }
-      input {
+
+      .chat-row input {
         flex: 1;
-        padding: 0.5rem 0.75rem;
-        border-radius: 0.5rem;
-        border: 1px solid #e5e7eb;
       }
+
+      .chat-row .btn-primary {
+        flex-shrink: 0;
+      }
+
       #output {
-        margin-top: 1.5rem;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        background: #f9fafb;
-        min-height: 80px;
+        margin-top: 1.25rem;
+        padding: 1.25rem;
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        min-height: 100px;
         white-space: pre-wrap;
+        font-size: 0.9375rem;
+        line-height: 1.6;
+        color: var(--text);
       }
-      footer {
+
+      #output:empty {
+        display: none;
+      }
+
+      #output.thinking {
+        color: var(--text-muted);
+        font-style: italic;
+      }
+
+      .footer {
         text-align: center;
-        padding: 1rem 0;
-        font-size: 0.85rem;
-        color: #6b7280;
+        padding: 2rem 1.5rem;
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        border-top: 1px solid var(--border);
+        margin-top: 2rem;
       }
-      footer a {
-        color: #2563eb;
+
+      .footer a {
+        color: var(--accent);
         text-decoration: none;
+        font-weight: 500;
+      }
+
+      .footer a:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 640px) {
+        .header-nav {
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+        .chat-row {
+          flex-direction: column;
+        }
+        .hero h1 {
+          font-size: 1.5rem;
+        }
       }
     </style>
   </head>
   <body>
-    <header>
-      <div>Amazon Ads AI Agent</div>
-      <nav>
+    <header class="header">
+      <div class="header-brand">Amazon Ads AI Agent</div>
+      <nav class="header-nav">
         <a href="/">Home</a>
         <a href="/privacy.html">Privacy</a>
         <a href="/about.html">About</a>
-        <button id="connectBtn">Connect Amazon Ads</button>
+        <button class="btn-primary" id="connectBtn">Connect Amazon Ads</button>
       </nav>
     </header>
-    <main>
-      <h1>Manage your Amazon Ads with AI</h1>
-      <p>
-        Connect your Amazon Ads account and use natural language to explore
-        campaigns, generate insights, and scale to new markets.
-      </p>
 
-      <h2>Chat with your ad agent</h2>
-      <p>
-        After connecting Amazon Ads, ask questions like:
-        <em>"Show me my current campaigns"</em> or
-        <em>"Summarize campaign performance."</em>
-      </p>
+    <main class="container">
+      <section class="card hero">
+        <h1>Manage your Amazon Ads with AI</h1>
+        <p>
+          Connect your account and use plain English to explore campaigns,
+          get insights, and scale to new markets—no spreadsheets required.
+        </p>
+      </section>
 
-      <div class="row">
-        <input
-          id="profileId"
-          placeholder="Amazon Ads profile ID (optional if set on backend)"
-        />
-      </div>
-      <div class="row">
-        <input id="message" placeholder="Type your question..." />
-        <button id="sendBtn">Send</button>
-      </div>
+      <section class="card">
+        <h2 class="section-title">Chat with your ad agent</h2>
+        <p class="section-desc">
+          After connecting, try: &ldquo;Show me my current campaigns&rdquo; or
+          &ldquo;Summarize campaign performance.&rdquo;
+        </p>
 
-      <div id="output"></div>
+        <div class="input-group">
+          <label for="profileId">Amazon Ads profile ID (optional)</label>
+          <input
+            id="profileId"
+            type="text"
+            placeholder="Leave blank if set on backend"
+          />
+        </div>
+
+        <div class="chat-row">
+          <input
+            id="message"
+            type="text"
+            placeholder="Type your question..."
+          />
+          <button class="btn-primary" id="sendBtn">Send</button>
+        </div>
+
+        <div id="output"></div>
+      </section>
     </main>
 
-    <footer>
-      &copy; <span id="year"></span> Amazon Ads AI Agent.
+    <footer class="footer">
+      &copy; <span id="year"></span> Amazon Ads AI Agent
+      &nbsp;&middot;&nbsp;
       <a href="/privacy.html">Privacy Policy</a>
-      &middot;
+      &nbsp;&middot;&nbsp;
       <a href="/about.html">About</a>
     </footer>
 
@@ -139,40 +313,39 @@
         ? "http://localhost:8000"
         : "https://amazon-ads.onrender.com";
 
-      document
-        .getElementById("connectBtn")
-        .addEventListener("click", () => {
-          window.location.href = `${BACKEND_URL}/auth/login`;
-        });
+      document.getElementById("connectBtn").addEventListener("click", () => {
+        window.location.href = `${BACKEND_URL}/auth/login`;
+      });
 
-      document
-        .getElementById("sendBtn")
-        .addEventListener("click", async () => {
-          const message = document.getElementById("message").value.trim();
-          const profileId = document.getElementById("profileId").value.trim();
-          if (!message) return;
+      document.getElementById("sendBtn").addEventListener("click", async () => {
+        const message = document.getElementById("message").value.trim();
+        const profileId = document.getElementById("profileId").value.trim();
+        if (!message) return;
 
-          const out = document.getElementById("output");
-          out.textContent = "Thinking...";
+        const out = document.getElementById("output");
+        out.textContent = "Thinking...";
+        out.classList.add("thinking");
 
-          try {
-            const resp = await fetch(`${BACKEND_URL}/agent/chat`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ message, profileId }),
-            });
-            const data = await resp.json();
-            if (data.reply) {
-              out.textContent = data.reply;
-            } else if (data.error) {
-              out.textContent = "Error: " + data.error;
-            } else {
-              out.textContent = JSON.stringify(data, null, 2);
-            }
-          } catch (err) {
-            out.textContent = "Request failed: " + err;
+        try {
+          const resp = await fetch(`${BACKEND_URL}/agent/chat`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message, profileId }),
+          });
+          const data = await resp.json();
+          out.classList.remove("thinking");
+          if (data.reply) {
+            out.textContent = data.reply;
+          } else if (data.error) {
+            out.textContent = "Error: " + data.error;
+          } else {
+            out.textContent = JSON.stringify(data, null, 2);
           }
-        });
+        } catch (err) {
+          out.classList.remove("thinking");
+          out.textContent = "Request failed: " + err.message;
+        }
+      });
     </script>
   </body>
   </html>

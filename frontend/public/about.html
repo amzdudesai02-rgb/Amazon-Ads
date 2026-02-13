@@ -4,97 +4,114 @@
     <meta charset="utf-8" />
     <title>About – Amazon Ads AI Agent</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
-      body {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          sans-serif;
-        margin: 0;
-        background: #f5f5f5;
-        color: #111827;
+      :root {
+        --bg: #0f172a;
+        --text: #1e293b;
+        --text-muted: #64748b;
+        --accent: #f97316;
+        --border: #e2e8f0;
+        --radius: 12px;
+        --radius-sm: 8px;
+        --shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
       }
-      header {
-        background: #111827;
+      * { box-sizing: border-box; }
+      body {
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+        margin: 0;
+        background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        color: var(--text);
+        line-height: 1.6;
+      }
+      .header {
+        background: var(--bg);
         color: white;
-        padding: 1rem 2rem;
+        padding: 0.875rem 1.5rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        box-shadow: var(--shadow-lg);
       }
-      header a {
-        color: #e5e7eb;
+      .header-brand { font-weight: 700; font-size: 1.125rem; letter-spacing: -0.02em; }
+      .header-nav { display: flex; align-items: center; gap: 0.5rem; }
+      .header-nav a {
+        color: #94a3b8;
         text-decoration: none;
-        margin-left: 1rem;
-        font-size: 0.95rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        padding: 0.5rem 0.75rem;
+        border-radius: var(--radius-sm);
+        transition: color 0.15s, background 0.15s;
       }
-      header a:hover {
-        color: white;
-      }
-      main {
-        max-width: 960px;
-        margin: 2rem auto;
+      .header-nav a:hover { color: white; background: rgba(255,255,255,0.08); }
+      .container { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
+      .card {
         background: white;
-        border-radius: 0.75rem;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
         padding: 2rem;
       }
-      h1 {
-        margin-top: 0;
-      }
-      footer {
+      .card h1 { margin: 0 0 1rem; font-size: 1.5rem; font-weight: 700; }
+      .card h2 { margin: 1.75rem 0 0.5rem; font-size: 1.125rem; font-weight: 600; }
+      .card p, .card ul { margin: 0 0 1rem; color: var(--text-muted); font-size: 0.9375rem; }
+      .card ul { padding-left: 1.5rem; }
+      .footer {
         text-align: center;
-        padding: 1rem 0 2rem;
-        font-size: 0.85rem;
-        color: #6b7280;
+        padding: 2rem 1.5rem;
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        border-top: 1px solid var(--border);
+        margin-top: 2rem;
       }
+      .footer a { color: var(--accent); text-decoration: none; font-weight: 500; }
+      .footer a:hover { text-decoration: underline; }
     </style>
   </head>
   <body>
-    <header>
-      <div>Amazon Ads AI Agent</div>
-      <nav>
+    <header class="header">
+      <div class="header-brand">Amazon Ads AI Agent</div>
+      <nav class="header-nav">
         <a href="/">Home</a>
         <a href="/privacy.html">Privacy</a>
         <a href="/about.html">About</a>
       </nav>
     </header>
-    <main>
-      <h1>About this project</h1>
-      <p>
-        Amazon Ads AI Agent is an experimental assistant that helps advertisers
-        explore and manage their Amazon Ads campaigns using natural language.
-        It connects to Amazon Ads through Login with Amazon (LWA) and the
-        Amazon Ads API, and uses a large language model to turn your prompts
-        into useful insights and actions.
-      </p>
-      <p>
-        Typical use cases include generating campaign reports, surfacing
-        optimization ideas, and helping you scale campaigns to new markets.
-      </p>
-      <h2>How it works</h2>
-      <ul>
-        <li>You connect your Amazon Ads account via Login with Amazon.</li>
-        <li>
-          The backend securely stores the necessary tokens and retrieves
-          campaign data from the Amazon Ads API.
-        </li>
-        <li>
-          The AI model analyzes your data and your questions to generate
-          tailored responses.
-        </li>
-      </ul>
-      <h2>Contact</h2>
-      <p>
-        For support, feedback, or partnership inquiries, reach out at:
-        <strong>you@example.com</strong>.
-      </p>
+    <main class="container">
+      <article class="card">
+        <h1>About this project</h1>
+        <p>
+          Amazon Ads AI Agent is an assistant that helps advertisers explore and manage
+          their Amazon Ads campaigns using natural language. It connects to Amazon Ads
+          through Login with Amazon (LWA) and the Amazon Ads API, and uses a large
+          language model to turn your prompts into useful insights and actions.
+        </p>
+        <p>
+          Typical use cases include generating campaign reports, surfacing optimization
+          ideas, and helping you scale campaigns to new markets.
+        </p>
+        <h2>How it works</h2>
+        <ul>
+          <li>You connect your Amazon Ads account via Login with Amazon.</li>
+          <li>The backend securely stores tokens and retrieves campaign data from the Amazon Ads API.</li>
+          <li>The AI model analyzes your data and questions to generate tailored responses.</li>
+        </ul>
+        <h2>Contact</h2>
+        <p>For support, feedback, or partnership inquiries: <strong>you@example.com</strong></p>
+      </article>
     </main>
-    <footer>
-      &copy; <span id="year"></span> Amazon Ads AI Agent.
+    <footer class="footer">
+      &copy; <span id="year"></span> Amazon Ads AI Agent
+      &nbsp;&middot;&nbsp;
+      <a href="/privacy.html">Privacy Policy</a>
+      &nbsp;&middot;&nbsp;
+      <a href="/about.html">About</a>
     </footer>
     <script>
-      document.getElementById("year").textContent =
-        new Date().getFullYear().toString();
+      document.getElementById("year").textContent = new Date().getFullYear().toString();
     </script>
   </body>
   </html>
-
