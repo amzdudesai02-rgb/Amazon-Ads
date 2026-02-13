@@ -53,6 +53,14 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+def root():
+    """Redirect root to frontend or return API info."""
+    if frontend_origin:
+        return RedirectResponse(url=frontend_origin, status_code=302)
+    return {"service": "Amazon Ads AI Agent API", "docs": "/docs", "health": "/health"}
+
+
 # Initialise database and load any stored tokens into memory.
 db.init_db()
 TOKENS: Dict[str, str] = {}
