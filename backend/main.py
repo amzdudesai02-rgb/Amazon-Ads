@@ -4,6 +4,7 @@ import time
 import urllib.parse
 from datetime import datetime, timezone
 from typing import Dict, Optional
+import secrets
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -20,7 +21,7 @@ load_dotenv()
 
 LWA_AUTH_URL = "https://www.amazon.com/ap/oa"
 LWA_TOKEN_URL = "https://api.amazon.com/auth/o2/token"
-ADS_API_BASE = "https://advertising-api.amazon.com"
+ADS_API_BASE = os.getenv("ADS_API_BASE", "https://advertising-api.amazon.com")
 
 LWA_CLIENT_ID = os.getenv("LWA_CLIENT_ID", "")
 LWA_CLIENT_SECRET = os.getenv("LWA_CLIENT_SECRET", "")
@@ -90,12 +91,16 @@ def auth_login() -> RedirectResponse:
             detail="LWA_CLIENT_ID and LWA_REDIRECT_URI must be configured.",
         )
 
+    # Generate a per-login state value and keep it in memory for validation.
+    state_value = secrets.token_urlsafe(16)
+    TOKENS["oauth_state"] = state_value
+
     params = {
         "client_id": LWA_CLIENT_ID,
         "scope": "advertising::campaign_management",
         "response_type": "code",
         "redirect_uri": LWA_REDIRECT_URI,
-        "state": "demo_state_value",
+        "state": state_value,
     }
     url = f"{LWA_AUTH_URL}?{urllib.parse.urlencode(params)}"
     return RedirectResponse(url)
@@ -106,6 +111,11 @@ async def auth_callback(code: str, state: Optional[str] = None) -> dict:
     """
     Handle OAuth2 callback and exchange code for tokens.
     """
+    # Validate state to protect against CSRF.
+    expected_state = TOKENS.get("oauth_state")
+    if expected_state and state != expected_state:
+        raise HTTPException(status_code=400, detail="Invalid OAuth state.")
+
     if not (LWA_CLIENT_ID and LWA_CLIENT_SECRET and LWA_REDIRECT_URI):
         raise HTTPException(
             status_code=500,
@@ -142,6 +152,12 @@ async def auth_callback(code: str, state: Optional[str] = None) -> dict:
         refresh_token=TOKENS["refresh_token"],
         expires_at=datetime.fromtimestamp(expires_at_ts, tz=timezone.utc),
     )
+    # Clear state once used.
+    TOKENS.pop("oauth_state", None)
+
+    # After successful auth, redirect to frontend if configured.
+    if frontend_origin:
+        return RedirectResponse(url=f"{frontend_origin}/connected?status=ok", status_code=302)
 
     return {"status": "ok"}
 
@@ -223,13 +239,39 @@ async def list_campaigns(profile_id: str):
     access_token = await get_access_token()
     headers = {
         "Authorization": f"Bearer {access_token}",
+        "Amazon-Advertising-API-ClientId": LWA_CLIENT_ID,
         "Amazon-Advertising-API-Scope": profile_id,
         "Content-Type": "application/json",
+        "Accept": "application/json",
     }
     async with httpx.AsyncClient() as http_client:
         resp = await http_client.get(f"{ADS_API_BASE}/v2/campaigns", headers=headers)
     resp.raise_for_status()
     return resp.json()
+
+
+async def get_profiles():
+    """
+    Fetch available Amazon Ads profiles for the authenticated account.
+    """
+    access_token = await get_access_token()
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Amazon-Advertising-API-ClientId": LWA_CLIENT_ID,
+        "Accept": "application/json",
+    }
+    async with httpx.AsyncClient() as http_client:
+        resp = await http_client.get(f"{ADS_API_BASE}/v2/profiles", headers=headers)
+    resp.raise_for_status()
+    return resp.json()
+
+
+@app.get("/ads/profiles")
+async def ads_profiles():
+    """
+    Convenience endpoint to inspect Ads profiles and copy profileId values.
+    """
+    return await get_profiles()
 
 
 class ChatRequest(BaseModel):
