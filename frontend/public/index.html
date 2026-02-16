@@ -292,7 +292,7 @@
   <body>
     <header class="header">
       <a href="/" class="header-brand">
-        <img src="logo.png" alt="amzDUDES" class="header-logo" onerror="this.style.display='none'; this.nextElementSibling.classList.add('fallback');" onload="this.nextElementSibling.classList.remove('fallback');" />
+        <img src="images.png?v=2" alt="amzDUDES" class="header-logo" onerror="if(this.dataset.fallback) { this.style.display='none'; this.nextElementSibling.classList.add('fallback'); } else { this.dataset.fallback='1'; this.src='logo.png?v=2'; this.onerror=null; }" onload="this.nextElementSibling.classList.remove('fallback');" />
         <span class="header-brand-text fallback"><span class="amz">amz</span><span class="dudes">DUDES</span></span>
       </a>
       <nav class="header-nav">
