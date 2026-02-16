@@ -252,6 +252,56 @@
         text-decoration: underline;
       }
 
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 1.25rem 0;
+      }
+
+      .feature-tile {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 1rem;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+
+      .feature-tile:hover {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.12);
+      }
+
+      .feature-tile h3 {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--text);
+        margin: 0 0 0.35rem;
+      }
+
+      .feature-tile p {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        margin: 0;
+        line-height: 1.45;
+      }
+
+      .feature-tile a {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        margin-top: 0.5rem;
+        display: inline-block;
+      }
+
+      .feature-tile a:hover { text-decoration: underline; }
+
+      .all-features-cta {
+        margin-top: 1rem;
+        text-align: center;
+      }
+
       .footer {
         text-align: center;
         padding: 2rem 1.5rem;
@@ -299,6 +349,7 @@
         <a href="/" class="active">Home</a>
         <a href="/agent.html">Ads Agent</a>
         <a href="/campaign-targeting.html">Campaign Targeting</a>
+        <a href="/ai-solutions.html">AI Solutions</a>
         <a href="/privacy.html">Privacy</a>
         <a href="/about.html">About</a>
         <button class="btn-primary" id="connectBtn">Connect Amazon Ads</button>
@@ -318,8 +369,38 @@
         </div>
       </section>
 
+      <section class="card">
+        <h2 class="section-title">Amazon Ads AI Solutions</h2>
+        <p class="section-desc" style="margin-bottom: 0.5rem;">Real results from AI-powered efficiency, creative tools, and audience targeting—built on Amazon’s commitment to safe, responsible, and transparent AI.</p>
+        <div class="features-grid">
+          <div class="feature-tile">
+            <h3>Efficiency</h3>
+            <p>Audience Bid Boosting, Rules-based Bidding, Keyword Groups; Performance+ and Brand+ with set-up in 4 clicks.</p>
+            <a href="/ai-solutions.html#efficiency">Details →</a>
+          </div>
+          <div class="feature-tile">
+            <h3>Creative</h3>
+            <p>Video, Image, and Audio generators; Creative Studio; Dynamic Creative Optimization across formats.</p>
+            <a href="/ai-solutions.html">Details →</a>
+          </div>
+          <div class="feature-tile">
+            <h3>Audiences</h3>
+            <p>Modeled, Similar, and Predictive Audiences; contextual targeting and messaging; scaled reach.</p>
+            <a href="/ai-solutions.html">Details →</a>
+          </div>
+          <div class="feature-tile">
+            <h3>Ads Agent</h3>
+            <p>Campaign targeting, AMC insights, create from media plan, optimize at scale—agentic AI for Amazon Ads.</p>
+            <a href="/ai-solutions.html">Details →</a>
+          </div>
+        </div>
+        <p class="all-features-cta">
+          <a href="/ai-solutions.html" class="section-desc" style="font-weight: 600;">Explore all AI solutions and features →</a>
+        </p>
+      </section>
+
       <section class="card features">
-        <h2 class="section-title">What you can do</h2>
+        <h2 class="section-title">What you can do here</h2>
         <ul class="feature-list">
           <li>Ask about campaigns, performance, and budgets in plain English.</li>
           <li>Get summaries and next-step suggestions without spreadsheets.</li>
