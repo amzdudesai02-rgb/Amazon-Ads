@@ -284,6 +284,25 @@ class ChatResponse(BaseModel):
     reply: str
 
 
+# --- Campaign targeting / audience suggestions ---
+
+class AudienceSuggestion(BaseModel):
+    name: str
+    description: str
+    reason: str
+
+
+class AudienceSuggestionsRequest(BaseModel):
+    goal: str
+    product_or_category: Optional[str] = None
+    budget_note: Optional[str] = None
+
+
+class AudienceSuggestionsResponse(BaseModel):
+    suggestions: list[AudienceSuggestion]
+    summary: Optional[str] = None
+
+
 @app.post("/agent/chat", response_model=ChatResponse)
 async def agent_chat(body: ChatRequest) -> ChatResponse:
     """
@@ -357,6 +376,55 @@ async def agent_chat(body: ChatRequest) -> ChatResponse:
             pass
 
     return ChatResponse(reply=reply_text)
+
+
+@app.post("/agent/audience-suggestions", response_model=AudienceSuggestionsResponse)
+async def agent_audience_suggestions(body: AudienceSuggestionsRequest) -> AudienceSuggestionsResponse:
+    """
+    AI-driven campaign targeting: suggest high-value audiences from a campaign brief.
+    Review and approve suggestions in the UI before using them in campaigns.
+    """
+    brief = f"Campaign goal: {body.goal}"
+    if body.product_or_category:
+        brief += f". Product/category: {body.product_or_category}"
+    if body.budget_note:
+        brief += f". Budget: {body.budget_note}"
+
+    system_prompt = """You are an Amazon Ads expert. Given a short campaign brief, suggest 3 to 5 high-value audience segments that would work well for Amazon Advertising.
+Return a JSON object with a key "suggestions" (array of objects). Each object must have:
+- "name": short audience segment name (e.g. "In-market: Sports & Outdoors")
+- "description": one sentence describing who is in this audience
+- "reason": one sentence on why this audience fits the brief
+Also include a key "summary" (string): one short paragraph summarizing the targeting strategy.
+Return only valid JSON, no markdown or extra text."""
+
+    completion = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": brief},
+        ],
+        temperature=0.3,
+    )
+
+    raw = completion.choices[0].message.content.strip()
+    # Strip markdown code block if present
+    if "```" in raw:
+        for start in ("```json", "```"):
+            if raw.startswith(start):
+                raw = raw[len(start):].strip()
+        raw = raw.rsplit("```", 1)[0].strip()
+    data = json.loads(raw)
+    suggestions = []
+    for s in data.get("suggestions", []):
+        if isinstance(s, dict):
+            suggestions.append(AudienceSuggestion(
+                name=s.get("name", "Audience"),
+                description=s.get("description", ""),
+                reason=s.get("reason", ""),
+            ))
+    summary = data.get("summary") if isinstance(data.get("summary"), str) else None
+    return AudienceSuggestionsResponse(suggestions=suggestions, summary=summary)
 
 
 if __name__ == "__main__":
