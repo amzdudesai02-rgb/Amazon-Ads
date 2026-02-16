@@ -103,6 +103,11 @@
         background: rgba(255, 255, 255, 0.08);
       }
 
+      .header-nav a.active {
+        color: white;
+        background: rgba(255, 255, 255, 0.12);
+      }
+
       .btn-primary {
         background: var(--accent);
         color: white;
@@ -161,6 +166,69 @@
         margin-right: auto;
       }
 
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+        margin-top: 1.5rem;
+      }
+
+      .btn-hero {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        text-decoration: none;
+      }
+
+      .btn-secondary {
+        background: transparent;
+        color: var(--bg);
+        border: 2px solid var(--border);
+        padding: 0.625rem 1.25rem;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        font-family: inherit;
+        transition: border-color 0.15s, background 0.15s, color 0.15s;
+      }
+
+      .btn-secondary:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: rgba(249, 115, 22, 0.06);
+      }
+
+      .features {
+        padding: 2rem;
+      }
+
+      .feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1rem;
+      }
+
+      .feature-list li {
+        position: relative;
+        padding-left: 1.25rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-muted);
+        font-size: 0.9375rem;
+      }
+
+      .feature-list li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.5em;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+
       .section-title {
         font-size: 1rem;
         font-weight: 600;
@@ -171,75 +239,17 @@
       .section-desc {
         color: var(--text-muted);
         font-size: 0.875rem;
-        margin: 0 0 1.25rem;
+        margin: 0;
       }
 
-      .input-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
+      .section-desc a {
+        color: var(--accent);
+        font-weight: 600;
+        text-decoration: none;
       }
 
-      .input-group label {
-        font-size: 0.8125rem;
-        font-weight: 500;
-        color: var(--text-muted);
-      }
-
-      input[type="text"] {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        font-size: 0.9375rem;
-        font-family: inherit;
-        transition: border-color 0.15s, box-shadow 0.15s;
-      }
-
-      input[type="text"]:focus {
-        outline: none;
-        border-color: var(--accent);
-        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
-      }
-
-      input[type="text"]::placeholder {
-        color: #94a3b8;
-      }
-
-      .chat-row {
-        display: flex;
-        gap: 0.75rem;
-        margin-top: 1rem;
-      }
-
-      .chat-row input {
-        flex: 1;
-      }
-
-      .chat-row .btn-primary {
-        flex-shrink: 0;
-      }
-
-      #output {
-        margin-top: 1.25rem;
-        padding: 1.25rem;
-        border-radius: var(--radius-sm);
-        background: var(--surface);
-        border: 1px solid var(--border);
-        min-height: 100px;
-        white-space: pre-wrap;
-        font-size: 0.9375rem;
-        line-height: 1.6;
-        color: var(--text);
-      }
-
-      #output:empty {
-        display: none;
-      }
-
-      #output.thinking {
-        color: var(--text-muted);
-        font-style: italic;
+      .section-desc a:hover {
+        text-decoration: underline;
       }
 
       .footer {
@@ -266,8 +276,12 @@
           flex-wrap: wrap;
           justify-content: flex-end;
         }
-        .chat-row {
+        .hero-actions {
           flex-direction: column;
+        }
+        .hero-actions .btn-hero,
+        .hero-actions .btn-secondary {
+          width: 100%;
         }
         .hero h1 {
           font-size: 1.5rem;
@@ -282,7 +296,8 @@
         <span class="header-brand-text fallback"><span class="amz">amz</span><span class="dudes">DUDES</span></span>
       </a>
       <nav class="header-nav">
-        <a href="/">Home</a>
+        <a href="/" class="active">Home</a>
+        <a href="/agent.html">Ads Agent</a>
         <a href="/privacy.html">Privacy</a>
         <a href="/about.html">About</a>
         <button class="btn-primary" id="connectBtn">Connect Amazon Ads</button>
@@ -296,34 +311,22 @@
           Connect your account and use plain English to explore campaigns,
           get insights, and scale to new markets—no spreadsheets required.
         </p>
+        <div class="hero-actions">
+          <a href="/agent.html" class="btn-primary btn-hero">Open Ads Agent</a>
+          <button type="button" class="btn-secondary" id="connectBtnHero">Connect Amazon Ads</button>
+        </div>
       </section>
 
-      <section class="card">
-        <h2 class="section-title">Chat with your ad agent</h2>
+      <section class="card features">
+        <h2 class="section-title">What you can do</h2>
+        <ul class="feature-list">
+          <li>Ask about campaigns, performance, and budgets in plain English.</li>
+          <li>Get summaries and next-step suggestions without spreadsheets.</li>
+          <li>Scale to new markets with guidance from your AI ad agent.</li>
+        </ul>
         <p class="section-desc">
-          After connecting, try: &ldquo;Show me my current campaigns&rdquo; or
-          &ldquo;Summarize campaign performance.&rdquo;
+          <a href="/agent.html">Go to Ads Agent</a> to start chatting after you connect.
         </p>
-
-        <div class="input-group">
-          <label for="profileId">Amazon Ads profile ID (optional)</label>
-          <input
-            id="profileId"
-            type="text"
-            placeholder="Leave blank if set on backend"
-          />
-        </div>
-
-        <div class="chat-row">
-          <input
-            id="message"
-            type="text"
-            placeholder="Type your question..."
-          />
-          <button class="btn-primary" id="sendBtn">Send</button>
-        </div>
-
-        <div id="output"></div>
       </section>
     </main>
 
@@ -350,34 +353,8 @@
         window.location.href = `${BACKEND_URL}/auth/login`;
       });
 
-      document.getElementById("sendBtn").addEventListener("click", async () => {
-        const message = document.getElementById("message").value.trim();
-        const profileId = document.getElementById("profileId").value.trim();
-        if (!message) return;
-
-        const out = document.getElementById("output");
-        out.textContent = "Thinking...";
-        out.classList.add("thinking");
-
-        try {
-          const resp = await fetch(`${BACKEND_URL}/agent/chat`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message, profileId }),
-          });
-          const data = await resp.json();
-          out.classList.remove("thinking");
-          if (data.reply) {
-            out.textContent = data.reply;
-          } else if (data.error) {
-            out.textContent = "Error: " + data.error;
-          } else {
-            out.textContent = JSON.stringify(data, null, 2);
-          }
-        } catch (err) {
-          out.classList.remove("thinking");
-          out.textContent = "Request failed: " + err.message;
-        }
+      document.getElementById("connectBtnHero").addEventListener("click", () => {
+        window.location.href = `${BACKEND_URL}/auth/login`;
       });
     </script>
   </body>

@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Ads Agent – amzDUDES</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #0f172a;
+        --bg-card: #ffffff;
+        --text: #1e293b;
+        --text-muted: #64748b;
+        --accent: #f97316;
+        --accent-hover: #ea580c;
+        --border: #e2e8f0;
+        --surface: #f8fafc;
+        --radius: 12px;
+        --radius-sm: 8px;
+        --shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+        --shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+        margin: 0;
+        background: #f1f5f9;
+        min-height: 100vh;
+        color: var(--text);
+        line-height: 1.6;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header {
+        background: var(--bg);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow-lg);
+        min-height: 56px;
+        flex-shrink: 0;
+      }
+
+      .header-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .header-logo {
+        height: 36px;
+        width: auto;
+        display: block;
+        object-fit: contain;
+      }
+
+      .header-brand-text { display: none; }
+      .header-brand-text.fallback { display: inline-flex; align-items: center; }
+      .header-brand-text { font-weight: 700; font-size: 1.25rem; letter-spacing: -0.02em; line-height: 1; }
+      .header-brand-text .amz { color: var(--accent); }
+      .header-brand-text .dudes { color: transparent; -webkit-text-stroke: 1.5px #94a3b8; font-weight: 600; }
+
+      .header-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+
+      .header-nav a {
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        padding: 0.5rem 0.75rem;
+        border-radius: var(--radius-sm);
+        transition: color 0.15s, background 0.15s;
+      }
+
+      .header-nav a:hover { color: white; background: rgba(255,255,255,0.08); }
+      .header-nav a.active { color: white; background: rgba(255,255,255,0.12); }
+
+      .btn-primary {
+        background: var(--accent);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: background 0.15s, transform 0.1s;
+        font-family: inherit;
+      }
+      .btn-primary:hover { background: var(--accent-hover); }
+      .btn-primary:active { transform: scale(0.98); }
+
+      .agent-wrap {
+        flex: 1;
+        max-width: 820px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 56px - 60px);
+      }
+
+      .agent-card {
+        background: var(--bg-card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--border);
+      }
+
+      .agent-head {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
+      }
+
+      .agent-head h1 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0 0 0.25rem;
+        letter-spacing: -0.02em;
+      }
+
+      .agent-head p {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        margin: 0;
+      }
+
+      .agent-body {
+        flex: 1;
+        padding: 1.5rem;
+        overflow-y: auto;
+        min-height: 200px;
+      }
+
+      #output {
+        font-size: 0.9375rem;
+        line-height: 1.65;
+        color: var(--text);
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      #output:empty {
+        display: block;
+        color: var(--text-muted);
+        font-style: normal;
+      }
+
+      #output:empty::before {
+        content: "Ask about campaigns, performance, or next steps. Example: \"Show my current campaigns\" or \"Summarize performance.\"";
+      }
+
+      #output.thinking {
+        color: var(--text-muted);
+        font-style: italic;
+      }
+
+      #output.thinking:empty::before {
+        content: "Thinking…";
+      }
+
+      .agent-foot {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--border);
+        background: var(--surface);
+      }
+
+      .input-row {
+        display: flex;
+        gap: 0.75rem;
+        align-items: stretch;
+      }
+
+      .input-row input[type="text"] {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 0.9375rem;
+        font-family: inherit;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+
+      .input-row input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+      }
+
+      .input-row input::placeholder { color: #94a3b8; }
+
+      .profile-row {
+        margin-top: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .profile-row label {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        white-space: nowrap;
+      }
+
+      .profile-row input {
+        max-width: 200px;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 0.875rem;
+      }
+
+      .footer {
+        text-align: center;
+        padding: 1rem 1.5rem;
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        border-top: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+
+      .footer a { color: var(--accent); text-decoration: none; font-weight: 500; }
+      .footer a:hover { text-decoration: underline; }
+
+      @media (max-width: 640px) {
+        .input-row { flex-direction: column; }
+        .profile-row { flex-wrap: wrap; }
+        .profile-row input { max-width: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <a href="/" class="header-brand">
+        <img src="logo.png" alt="amzDUDES" class="header-logo" onerror="this.style.display='none'; this.nextElementSibling.classList.add('fallback');" onload="this.nextElementSibling.classList.remove('fallback');" />
+        <span class="header-brand-text fallback"><span class="amz">amz</span><span class="dudes">DUDES</span></span>
+      </a>
+      <nav class="header-nav">
+        <a href="/">Home</a>
+        <a href="/agent.html" class="active">Ads Agent</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/about.html">About</a>
+        <button class="btn-primary" id="connectBtn">Connect Amazon Ads</button>
+      </nav>
+    </header>
+
+    <div class="agent-wrap">
+      <div class="agent-card">
+        <div class="agent-head">
+          <h1>Ads Agent</h1>
+          <p>Chat with your Amazon Ads assistant. Ask about campaigns, performance, or next steps.</p>
+        </div>
+        <div class="agent-body">
+          <div id="output"></div>
+        </div>
+        <div class="agent-foot">
+          <div class="input-row">
+            <input id="message" type="text" placeholder="Type your question…" />
+            <button class="btn-primary" id="sendBtn">Send</button>
+          </div>
+          <div class="profile-row">
+            <label for="profileId">Profile ID (optional)</label>
+            <input id="profileId" type="text" placeholder="Leave blank if set on backend" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      AMZDudes &copy; <span id="year"></span>
+      &nbsp;&middot;&nbsp;
+      <a href="/privacy.html">Privacy Policy</a>
+      &nbsp;&middot;&nbsp;
+      <a href="/about.html">About</a>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear().toString();
+
+      const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      const BACKEND_URL = isLocal ? "http://localhost:8000" : "https://amazon-ads.onrender.com";
+
+      document.getElementById("connectBtn").addEventListener("click", () => {
+        window.location.href = BACKEND_URL + "/auth/login";
+      });
+
+      const out = document.getElementById("output");
+      const messageInput = document.getElementById("message");
+      const sendBtn = document.getElementById("sendBtn");
+
+      function setThinking(thinking) {
+        out.classList.toggle("thinking", thinking);
+        if (thinking) out.textContent = "";
+      }
+
+      document.getElementById("sendBtn").addEventListener("click", runSend);
+      messageInput.addEventListener("keydown", (e) => { if (e.key === "Enter") runSend(); });
+
+      async function runSend() {
+        const message = messageInput.value.trim();
+        const profileId = document.getElementById("profileId").value.trim();
+        if (!message) return;
+
+        setThinking(true);
+
+        try {
+          const resp = await fetch(BACKEND_URL + "/agent/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message, profileId }),
+          });
+          const data = await resp.json();
+          setThinking(false);
+          if (data.reply) {
+            out.textContent = data.reply;
+          } else if (data.error) {
+            out.textContent = "Error: " + data.error;
+          } else {
+            out.textContent = JSON.stringify(data, null, 2);
+          }
+        } catch (err) {
+          setThinking(false);
+          out.textContent = "Request failed: " + err.message;
+        }
+      }
+    </script>
+  </body>
+</html>
