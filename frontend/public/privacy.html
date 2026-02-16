@@ -31,13 +31,20 @@
       .header {
         background: var(--bg);
         color: white;
-        padding: 0.875rem 1.5rem;
+        padding: 0.75rem 1.5rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
         box-shadow: var(--shadow-lg);
+        min-height: 56px;
       }
-      .header-brand { font-weight: 700; font-size: 1.125rem; letter-spacing: -0.02em; }
+      .header-brand { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: inherit; }
+      .header-logo { height: 36px; width: auto; display: block; object-fit: contain; }
+      .header-brand-text { display: none; }
+      .header-brand-text.fallback { display: inline-flex; align-items: center; }
+      .header-brand-text { font-weight: 700; font-size: 1.25rem; letter-spacing: -0.02em; line-height: 1; }
+      .header-brand-text .amz { color: var(--accent); }
+      .header-brand-text .dudes { color: transparent; -webkit-text-stroke: 1.5px #94a3b8; font-weight: 600; }
       .header-nav { display: flex; align-items: center; gap: 0.5rem; }
       .header-nav a {
         color: #94a3b8;
@@ -75,7 +82,10 @@
   </head>
   <body>
     <header class="header">
-      <div class="header-brand">Amazon Ads AI Agent</div>
+      <a href="/" class="header-brand">
+        <img src="logo.png" alt="amzDUDES" class="header-logo" onerror="this.style.display='none'; this.nextElementSibling.classList.add('fallback');" onload="this.nextElementSibling.classList.remove('fallback');" />
+        <span class="header-brand-text fallback"><span class="amz">amz</span><span class="dudes">DUDES</span></span>
+      </a>
       <nav class="header-nav">
         <a href="/">Home</a>
         <a href="/privacy.html">Privacy</a>
