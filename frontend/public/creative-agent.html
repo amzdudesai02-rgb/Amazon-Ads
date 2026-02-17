@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Creative Agent – amzDUDES</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #0f172a;
+        --text: #1e293b;
+        --text-muted: #64748b;
+        --accent: #f97316;
+        --accent-hover: #ea580c;
+        --border: #e2e8f0;
+        --surface: #f8fafc;
+        --radius: 12px;
+        --shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+      }
+      * { box-sizing: border-box; }
+      body { font-family: "Plus Jakarta Sans", system-ui, sans-serif; margin: 0; background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%); min-height: 100vh; color: var(--text); line-height: 1.6; display: flex; flex-direction: column; }
+      .header { background: var(--bg); color: white; padding: 0.75rem 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-lg); min-height: 56px; }
+      .header-brand { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: inherit; }
+      .header-logo { height: 36px; width: auto; display: block; object-fit: contain; }
+      .header-brand-text { display: none; }
+      .header-brand-text.fallback { display: inline-flex; align-items: center; }
+      .header-brand-text { font-weight: 700; font-size: 1.25rem; letter-spacing: -0.02em; line-height: 1; }
+      .header-brand-text .amz { color: var(--accent); }
+      .header-brand-text .dudes { color: transparent; -webkit-text-stroke: 1.5px #94a3b8; font-weight: 600; }
+      .header-nav { display: flex; align-items: center; gap: 0.25rem; }
+      .header-nav a { color: #94a3b8; text-decoration: none; font-size: 0.875rem; font-weight: 500; padding: 0.5rem 0.75rem; border-radius: 8px; transition: color 0.15s, background 0.15s; }
+      .header-nav a:hover { color: white; background: rgba(255,255,255,0.08); }
+      .header-nav a.active { color: white; background: rgba(255,255,255,0.12); }
+      .btn-primary { background: var(--accent); color: white; border: none; padding: 0.625rem 1.25rem; border-radius: 8px; font-weight: 600; font-size: 0.9375rem; cursor: pointer; font-family: inherit; }
+      .btn-primary:hover { background: var(--accent-hover); }
+      .main { flex: 1; max-width: 640px; margin: 0 auto; padding: 3rem 1.5rem; text-align: center; }
+      .creative-hero { margin-bottom: 2rem; }
+      .creative-hero h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 0.5rem; }
+      .creative-hero p { color: var(--text-muted); font-size: 1rem; margin: 0; }
+      .creative-prompt { background: white; border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 1.5rem; border: 1px solid var(--border); }
+      .creative-prompt input { width: 100%; padding: 1rem 1.25rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; font-family: inherit; }
+      .creative-prompt input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(249,115,22,0.12); }
+      .creative-prompt input::placeholder { color: #94a3b8; }
+      .creative-prompt .btn-wrap { margin-top: 1rem; }
+      .badge { display: inline-block; background: rgba(249,115,22,0.12); color: var(--accent); font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: 4px; margin-bottom: 0.5rem; }
+      .footer { text-align: center; padding: 1.5rem; font-size: 0.8125rem; color: var(--text-muted); border-top: 1px solid var(--border); }
+      .footer a { color: var(--accent); text-decoration: none; font-weight: 500; }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <a href="/" class="header-brand">
+        <img src="images.png?v=2" alt="amzDUDES" class="header-logo" onerror="if(this.dataset.fallback) { this.style.display='none'; this.nextElementSibling.classList.add('fallback'); } else { this.dataset.fallback='1'; this.src='logo.png?v=2'; this.onerror=null; }" onload="this.nextElementSibling.classList.remove('fallback');" />
+        <span class="header-brand-text fallback"><span class="amz">amz</span><span class="dudes">DUDES</span></span>
+      </a>
+      <nav class="header-nav">
+        <a href="/">Home</a>
+        <a href="/agent.html">Ads Agent</a>
+        <a href="/campaign-targeting.html">Campaign Targeting</a>
+        <a href="/media-plan.html">Media Plan</a>
+        <a href="/creative-agent.html" class="active">Creative Agent</a>
+        <a href="/ai-solutions.html">AI Solutions</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/about.html">About</a>
+        <button class="btn-primary" id="connectBtn">Connect Amazon Ads</button>
+      </nav>
+    </header>
+    <main class="main">
+      <div class="creative-hero">
+        <span class="badge">NEW</span>
+        <h1>Meet Creative Agent</h1>
+        <p>AI-powered ad creation. Chat to create images, videos, text, and audio.</p>
+      </div>
+      <div class="creative-prompt">
+        <input id="creativeInput" type="text" placeholder="What would you like to build today?" />
+        <div class="btn-wrap">
+          <button class="btn-primary" id="buildBtn">Build</button>
+        </div>
+      </div>
+      <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 1.5rem;">Creative Agent helps you experiment, ideate, and deliver creatives with a simple workflow: Concept → Storyboard → Iterate → Deliver. Open Beta Nov ’25 (US).</p>
+    </main>
+    <footer class="footer">
+      AMZDudes &copy; <span id="year"></span> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/about.html">About</a>
+    </footer>
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+      const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      const BACKEND_URL = isLocal ? "http://localhost:8000" : "https://amazon-ads.onrender.com";
+      document.getElementById("connectBtn").addEventListener("click", () => { window.location.href = BACKEND_URL + "/auth/login"; });
+      document.getElementById("buildBtn").addEventListener("click", goToAgent);
+      document.getElementById("creativeInput").addEventListener("keydown", (e) => { if (e.key === "Enter") goToAgent(); });
+      function goToAgent() {
+        const q = document.getElementById("creativeInput").value.trim();
+        if (q) window.location.href = "/agent.html?q=" + encodeURIComponent(q);
+        else window.location.href = "/agent.html";
+      }
+    </script>
+  </body>
+</html>

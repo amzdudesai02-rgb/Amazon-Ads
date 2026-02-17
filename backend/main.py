@@ -278,6 +278,7 @@ class ChatRequest(BaseModel):
     message: str
     profile_id: Optional[str] = None
     intent: Optional[str] = None  # optional hint from frontend later
+    media_plan: Optional[str] = None  # optional: pasted/uploaded media plan for campaign creation
 
 
 class ChatResponse(BaseModel):
@@ -290,6 +291,9 @@ class AudienceSuggestion(BaseModel):
     name: str
     description: str
     reason: str
+    category: Optional[str] = None   # e.g. In-market, Sporting Goods
+    fee: Optional[str] = None        # e.g. $1.00
+    audience_id: Optional[str] = None  # optional segment ID for display
 
 
 class AudienceSuggestionsRequest(BaseModel):
@@ -335,20 +339,22 @@ async def agent_chat(body: ChatRequest) -> ChatResponse:
             )
 
     system_prompt = (
-        "You are an assistant that helps manage Amazon Ads campaigns. "
-        "When campaign data is provided, use it to answer questions in a concise, clear way."
+        "You are an AI agent for Amazon Ads. You help with media planning and campaign creation. "
+        "When campaign data is provided, use it to answer questions in a concise, clear way. "
+        "When a media plan is provided, help translate it into campaign structures (campaigns, ad groups, budgets, goals) and suggest next steps."
     )
 
     context_snippet = ""
     if campaigns_data is not None:
-        # Truncate to keep the prompt small.
         context_snippet = f"Here is JSON campaign data:\n{str(campaigns_data)[:5000]}"
+    if body.media_plan:
+        context_snippet += f"\n\nAdvertiser's media plan (use this to create or suggest campaign structures):\n{body.media_plan[:8000]}"
 
     messages = [
         {"role": "system", "content": system_prompt},
         {
             "role": "user",
-            "content": f"{body.message}\n\n{context_snippet}",
+            "content": f"{body.message}\n\n{context_snippet}".strip(),
         },
     ]
 
@@ -392,9 +398,12 @@ async def agent_audience_suggestions(body: AudienceSuggestionsRequest) -> Audien
 
     system_prompt = """You are an Amazon Ads expert. Given a short campaign brief, suggest 3 to 5 high-value audience segments that would work well for Amazon Advertising.
 Return a JSON object with a key "suggestions" (array of objects). Each object must have:
-- "name": short audience segment name (e.g. "In-market: Sports & Outdoors")
+- "name": short audience segment name (e.g. "WM - Women's Road Running Shoes")
 - "description": one sentence describing who is in this audience
 - "reason": one sentence on why this audience fits the brief
+- "category": optional, e.g. "In-market", "Sporting Goods", "Fashion"
+- "fee": optional, e.g. "$1.00"
+- "audience_id": optional, a numeric or string ID for the segment (e.g. "467536256750790986")
 Also include a key "summary" (string): one short paragraph summarizing the targeting strategy.
 Return only valid JSON, no markdown or extra text."""
 
@@ -422,6 +431,9 @@ Return only valid JSON, no markdown or extra text."""
                 name=s.get("name", "Audience"),
                 description=s.get("description", ""),
                 reason=s.get("reason", ""),
+                category=s.get("category"),
+                fee=s.get("fee"),
+                audience_id=s.get("audience_id"),
             ))
     summary = data.get("summary") if isinstance(data.get("summary"), str) else None
     return AudienceSuggestionsResponse(suggestions=suggestions, summary=summary)

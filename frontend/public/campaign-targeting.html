@@ -119,6 +119,49 @@
         margin: 0;
       }
 
+      .page-head .badge-open-beta {
+        display: inline-block;
+        background: var(--accent);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.6rem;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+      }
+
+      .why-it-matters {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+      .why-it-matters .pillar {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 1rem;
+        text-align: center;
+      }
+      .why-it-matters .pillar strong { font-size: 0.8125rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.02em; display: block; margin-bottom: 0.35rem; }
+      .why-it-matters .pillar span { font-size: 0.9375rem; font-weight: 600; color: var(--text); }
+
+      .words-remaining { font-size: 0.8125rem; color: var(--text-muted); margin-top: 0.25rem; }
+      .targeting-intent-hint { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+      .tabs { display: flex; gap: 0; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+      .tabs button { padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 600; background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; color: var(--text-muted); cursor: pointer; font-family: inherit; }
+      .tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+      .tabs button:hover { color: var(--text); }
+      .ai-disclaimer { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 0.75rem; padding: 0.5rem 0; }
+      .add-targeting-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+      .feedback-row { margin-top: 1rem; font-size: 0.875rem; color: var(--text-muted); }
+      .feedback-row span { margin-right: 0.5rem; }
+      .feedback-row button { background: none; border: none; cursor: pointer; padding: 0.25rem; }
+      .forecast-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; margin-top: 1rem; }
+      .forecast-card h3 { font-size: 0.9375rem; font-weight: 600; margin: 0 0 0.5rem; }
+      .forecast-card .metric { font-size: 0.875rem; margin-bottom: 0.35rem; }
+      .forecast-card .metric strong { color: var(--text-muted); font-weight: 500; }
+
       .card {
         background: var(--bg-card);
         border-radius: var(--radius);
@@ -275,6 +318,14 @@
         font-size: 0.9375rem;
       }
 
+      .suggestions-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+      .suggestions-table th { text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); }
+      .suggestions-table td { padding: 0.75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+      .suggestions-table tr.approved { background: rgba(249, 115, 22, 0.06); }
+      .suggestions-table .cell-name { font-weight: 600; color: var(--text); }
+      .suggestions-table .cell-actions { white-space: nowrap; }
+      .suggestions-table input[type="checkbox"] { margin-right: 0.5rem; }
+
       .footer {
         text-align: center;
         padding: 1rem 1.5rem;
@@ -302,6 +353,8 @@
         <a href="/">Home</a>
         <a href="/agent.html">Ads Agent</a>
         <a href="/campaign-targeting.html" class="active">Campaign Targeting</a>
+        <a href="/media-plan.html">Media Plan</a>
+        <a href="/creative-agent.html">Creative Agent</a>
         <a href="/ai-solutions.html">AI Solutions</a>
         <a href="/privacy.html">Privacy</a>
         <a href="/about.html">About</a>
@@ -311,16 +364,29 @@
 
     <main class="main">
       <div class="page-head">
-        <h1>Ads Agent: Campaign Targeting</h1>
-        <p class="tagline">Streamline campaign targeting setup with AI. Develop a brief, get audience suggestions, then review and approve before launch.</p>
+        <span class="badge-open-beta">Now in Open Beta</span>
+        <h1>Ads Agent: Campaign targeting</h1>
+        <p class="tagline">Streamline campaign targeting setup with Ads Agent. Develop a campaign brief, get audience suggestions, then review and approve before launch.</p>
       </div>
 
+      <section class="card why-section">
+        <h2 style="margin-bottom: 0.75rem;">The power of AI-driven campaign targeting</h2>
+        <div class="why-it-matters">
+          <div class="pillar"><strong>Time savings</strong><span>Eliminates the manual workflow of sorting through segments.</span></div>
+          <div class="pillar"><strong>Enhance performance</strong><span>Discover high-value audiences you've never reached before.</span></div>
+          <div class="pillar"><strong>Transparency and control</strong><span>Review and approve suggestions before campaign launch.</span></div>
+          <div class="pillar"><strong>Amazon Shopping Insights</strong><span>Leverage proprietary Amazon Audience segments.</span></div>
+        </div>
+      </section>
+
       <section class="card">
-        <h2>Develop a campaign brief</h2>
-        <p class="form-group hint" style="margin-top: 0;">Tell us your goal and we’ll suggest high-value audiences you can use for targeting.</p>
+        <h2>Add targeting with AI</h2>
+        <p class="form-group hint" style="margin-top: 0;">Audiences and keywords are currently supported. Additional targeting options will be added in the future.</p>
         <div class="form-group">
-          <label for="goal">Campaign goal *</label>
-          <textarea id="goal" placeholder="e.g. Increase sales for our new running shoes, reach in-market buyers, scale in US and UK"></textarea>
+          <label for="goal">Targeting intent *</label>
+          <p class="form-group hint" style="margin-top: 0; margin-bottom: 0.35rem;">This may be used to reach relevant audiences with AI. Please review and update if needed.</p>
+          <textarea id="goal" maxlength="2000" placeholder="e.g. My target audience is interested in high-quality running and athletic footwear for women who are active runners or fitness enthusiasts. They value performance, comfort, and support for road running."></textarea>
+          <p class="words-remaining" id="wordsRemaining">2000 characters remaining</p>
         </div>
         <div class="form-group">
           <label for="product">Product or category (optional)</label>
@@ -331,15 +397,44 @@
           <input id="budget" type="text" placeholder="e.g. Daily budget $50, testing phase" />
         </div>
         <div class="actions">
-          <button class="btn-primary" id="getSuggestionsBtn">Get audience suggestions</button>
+          <button class="btn-primary" id="getSuggestionsBtn">+ Update targeting suggestions</button>
         </div>
       </section>
 
       <section class="card" id="suggestionsSection">
-        <h2>Review and approve suggestions</h2>
+        <h2>Suggestions</h2>
         <p id="summary"></p>
+        <div class="actions" id="updateActions" style="display: none; margin-bottom: 0.75rem;">
+          <button class="btn-primary" id="updateSuggestionsBtn">+ Update targeting suggestions</button>
+        </div>
+        <p class="ai-disclaimer" id="aiDisclaimer" style="display: none;">These suggestions were generated using AI. Please review before adding them to the line item.</p>
+        <div class="tabs">
+          <button type="button" class="active" data-tab="audiences">Audiences</button>
+          <button type="button" data-tab="keywords">Keywords</button>
+        </div>
+        <div id="tabAudiences">
         <div id="suggestionsList" class="suggestion-list">
-          <div id="suggestionsEmpty" class="empty-state">Complete the brief above and click “Get audience suggestions” to see AI-recommended audiences.</div>
+          <div id="suggestionsEmpty" class="empty-state">Enter your targeting intent above and click “Get audience suggestions” to see AI-recommended audiences.</div>
+        </div>
+          <div class="add-targeting-row" id="addTargetingRow" style="display: none;">
+            <button type="button" class="btn-primary" id="addTargetingBtn">Add targeting</button>
+            <button type="button" style="background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 0.5rem 1rem; border-radius: var(--radius-sm); font-weight: 500; cursor: pointer; font-family: inherit;" id="cancelTargetingBtn">Cancel</button>
+          </div>
+          <div class="feedback-row" id="feedbackRow" style="display: none;">
+            <span>Was this answer helpful?</span>
+            <button type="button" id="feedbackYes" title="Yes">&#128077;</button>
+            <button type="button" id="feedbackNo" title="No">&#128078;</button>
+          </div>
+        </div>
+        <div id="tabKeywords" style="display: none;">
+          <p class="empty-state">Keyword suggestions will be available in a future update. Use Audiences for now.</p>
+        </div>
+        <div class="forecast-card" id="forecastCard" style="display: none;">
+          <h3>Forecast</h3>
+          <p class="metric"><strong>eCPM:</strong> —</p>
+          <p class="metric"><strong>Available spend:</strong> —</p>
+          <p class="metric"><strong>Impressions:</strong> —</p>
+          <p style="margin: 0.5rem 0 0;"><a href="#" style="font-size: 0.875rem; font-weight: 600; color: var(--accent);">View detailed forecast</a></p>
         </div>
       </section>
     </main>
@@ -369,30 +464,51 @@
       const summaryEl = document.getElementById("summary");
       const listEl = document.getElementById("suggestionsList");
       const emptyEl = document.getElementById("suggestionsEmpty");
+      const updateActions = document.getElementById("updateActions");
+      const updateBtn = document.getElementById("updateSuggestionsBtn");
 
-      function renderSuggestion(s, index, approved) {
-        const div = document.createElement("div");
-        div.className = "suggestion-card" + (approved ? " approved" : "");
-        div.dataset.index = index;
-        div.innerHTML =
-          "<h3>" + escapeHtml(s.name) + "</h3>" +
-          "<p class=\"desc\">" + escapeHtml(s.description) + "</p>" +
-          "<p class=\"reason\">" + escapeHtml(s.reason) + "</p>" +
-          "<div class=\"card-actions\">" +
-          "<button type=\"button\" class=\"btn-sm btn-approve\">" + (approved ? "Approved" : "Approve") + "</button>" +
-          "<button type=\"button\" class=\"btn-sm btn-use\">Use for campaign</button>" +
-          "</div>";
-        const approveBtn = div.querySelector(".btn-approve");
-        const useBtn = div.querySelector(".btn-use");
-        approveBtn.addEventListener("click", () => {
-          div.classList.add("approved");
-          approveBtn.textContent = "Approved";
-          approveBtn.disabled = true;
+      let currentSuggestions = [];
+      const approvedSet = new Set();
+
+      function renderSuggestions(suggestions) {
+        listEl.innerHTML = "";
+        const table = document.createElement("table");
+        table.className = "suggestions-table";
+        table.innerHTML = "<thead><tr><th></th><th>Audience</th><th>Category</th><th>Fee</th><th></th></tr></thead><tbody></tbody>";
+        const tbody = table.querySelector("tbody");
+        suggestions.forEach((s, i) => {
+          const approved = approvedSet.has(i);
+          const tr = document.createElement("tr");
+          if (approved) tr.classList.add("approved");
+          const cat = s.category || "—";
+          const fee = s.fee || "—";
+          const idPart = s.audience_id ? "<br><span style=\"font-size:0.75em;color:var(--text-muted);\">ID: " + escapeHtml(s.audience_id) + "</span>" : "";
+          tr.innerHTML =
+            "<td><input type=\"checkbox\" class=\"suggestion-cb\" data-index=\"" + i + "\" " + (approved ? "checked" : "") + " /></td>" +
+            "<td class=\"cell-name\">" + escapeHtml(s.name) + idPart + "<br><span style=\"font-size:0.8em;color:var(--text-muted);\">" + escapeHtml(s.description) + "</span></td>" +
+            "<td>" + escapeHtml(cat) + "</td>" +
+            "<td>" + escapeHtml(fee) + "</td>" +
+            "<td class=\"cell-actions\">" +
+            "<button type=\"button\" class=\"btn-sm btn-approve\">" + (approved ? "Approved" : "Approve") + "</button> " +
+            "<button type=\"button\" class=\"btn-sm btn-use\">Use for campaign</button>" +
+            "</td>";
+          const approveBtn = tr.querySelector(".btn-approve");
+          const useBtn = tr.querySelector(".btn-use");
+          const cb = tr.querySelector(".suggestion-cb");
+          approveBtn.addEventListener("click", () => {
+            approvedSet.add(i);
+            tr.classList.add("approved");
+            approveBtn.textContent = "Approved";
+            approveBtn.disabled = true;
+            if (cb) cb.checked = true;
+          });
+          useBtn.addEventListener("click", () => {
+            alert("Audience \"" + s.name + "\" marked for use. In a full setup, this would apply the segment to your campaign.");
+          });
+          if (cb) cb.addEventListener("change", () => { if (cb.checked) approvedSet.add(i); else approvedSet.delete(i); tr.classList.toggle("approved", cb.checked); });
+          tbody.appendChild(tr);
         });
-        useBtn.addEventListener("click", () => {
-          alert("Audience \"" + s.name + "\" marked for use. In a full setup, this would apply the segment to your campaign.");
-        });
-        return div;
+        listEl.appendChild(table);
       }
 
       function escapeHtml(text) {
@@ -404,7 +520,7 @@
       getBtn.addEventListener("click", async () => {
         const goal = goalEl.value.trim();
         if (!goal) {
-          alert("Please enter a campaign goal.");
+          alert("Please enter your targeting intent.");
           return;
         }
 
@@ -438,17 +554,46 @@
           }
 
           emptyEl.style.display = "none";
-          listEl.innerHTML = "";
-          (data.suggestions || []).forEach((s, i) => {
-            listEl.appendChild(renderSuggestion(s, i, false));
-          });
+          currentSuggestions = data.suggestions || [];
+          updateActions.style.display = "block";
+          document.getElementById("aiDisclaimer").style.display = "block";
+          document.getElementById("addTargetingRow").style.display = "flex";
+          document.getElementById("feedbackRow").style.display = "block";
+          document.getElementById("forecastCard").style.display = "block";
+          renderSuggestions(currentSuggestions);
         } catch (err) {
           alert("Could not load suggestions: " + (err.message || "Unknown error"));
         } finally {
           getBtn.disabled = false;
-          getBtn.textContent = "Get audience suggestions";
+          getBtn.textContent = "+ Update targeting suggestions";
         }
+      }
+
+      updateBtn.addEventListener("click", () => { getBtn.click(); });
+
+      goalEl.addEventListener("input", () => {
+        const len = goalEl.value.length;
+        document.getElementById("wordsRemaining").textContent = (2000 - len) + " characters remaining";
       });
+
+      document.querySelectorAll(".tabs button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".tabs button").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          const tab = btn.dataset.tab;
+          document.getElementById("tabAudiences").style.display = tab === "audiences" ? "block" : "none";
+          document.getElementById("tabKeywords").style.display = tab === "keywords" ? "block" : "none";
+        });
+      });
+
+      document.getElementById("addTargetingBtn").addEventListener("click", () => {
+        const n = listEl.querySelectorAll(".suggestion-cb:checked").length;
+        alert(n ? "Adding " + n + " selected audience(s) to targeting. In a full setup, these would be applied to your line item." : "Select one or more audiences first.");
+      });
+      document.getElementById("cancelTargetingBtn").addEventListener("click", () => { /* dismiss or go back */ });
+
+      document.getElementById("feedbackYes").addEventListener("click", () => { document.getElementById("feedbackRow").innerHTML = "<span>Thanks for your feedback.</span>"; });
+      document.getElementById("feedbackNo").addEventListener("click", () => { document.getElementById("feedbackRow").innerHTML = "<span>Thanks for your feedback.</span>"; });
     </script>
   </body>
 </html>

@@ -167,8 +167,40 @@
       }
 
       #output:empty::before {
-        content: "Ask about campaigns, performance, or next steps. Example: \"Show my current campaigns\" or \"Summarize performance.\"";
+        content: none;
       }
+
+      .agent-welcome {
+        margin-bottom: 1rem;
+      }
+      .agent-welcome p { margin: 0 0 0.5rem; font-size: 0.9375rem; color: var(--text); }
+      .agent-welcome .btn-upload {
+        display: inline-block;
+        margin-top: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--surface);
+        border: 1px dashed var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--accent);
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .agent-welcome .btn-upload:hover { border-color: var(--accent); background: rgba(249,115,22,0.06); }
+      .media-plan-panel {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        display: none;
+      }
+      .media-plan-panel.visible { display: block; }
+      .media-plan-panel label { font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.35rem; }
+      .media-plan-panel textarea { width: 100%; min-height: 120px; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.875rem; font-family: inherit; resize: vertical; }
+      .media-plan-panel .hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; }
+      .media-plan-panel .btn-use { margin-top: 0.5rem; font-size: 0.8125rem; }
 
       #output.thinking {
         color: var(--text-muted);
@@ -259,6 +291,8 @@
         <a href="/">Home</a>
         <a href="/agent.html" class="active">Ads Agent</a>
         <a href="/campaign-targeting.html">Campaign Targeting</a>
+        <a href="/media-plan.html">Media Plan</a>
+        <a href="/creative-agent.html">Creative Agent</a>
         <a href="/ai-solutions.html">AI Solutions</a>
         <a href="/privacy.html">Privacy</a>
         <a href="/about.html">About</a>
@@ -273,11 +307,21 @@
           <p>Chat with your Amazon Ads assistant. Ask about campaigns, performance, or next steps.</p>
         </div>
         <div class="agent-body">
+          <div class="agent-welcome">
+            <p><strong>Hi.</strong> I'm an AI agent for Amazon Ads. I can help with your media planning and campaign creation.</p>
+            <button type="button" class="btn-upload" id="uploadMediaPlanBtn">Upload media plan</button>
+            <div class="media-plan-panel" id="mediaPlanPanel">
+              <label for="mediaPlanText">Paste or type your media plan</label>
+              <textarea id="mediaPlanText" placeholder="e.g., 2 campaigns with 6 ad groups (3 each), STV + Display, budgets and dates…"></textarea>
+              <p class="hint">I'll use this when you ask to create or optimize campaigns.</p>
+              <button type="button" class="btn-primary btn-use" id="closeMediaPlanBtn">Done</button>
+            </div>
+          </div>
           <div id="output"></div>
         </div>
         <div class="agent-foot">
           <div class="input-row">
-            <input id="message" type="text" placeholder="Type your question…" />
+            <input id="message" type="text" placeholder="Type your message here" />
             <button class="btn-primary" id="sendBtn">Send</button>
           </div>
           <div class="profile-row">
@@ -306,6 +350,21 @@
         window.location.href = BACKEND_URL + "/auth/login";
       });
 
+      const uploadMediaPlanBtn = document.getElementById("uploadMediaPlanBtn");
+      const mediaPlanPanel = document.getElementById("mediaPlanPanel");
+      const mediaPlanText = document.getElementById("mediaPlanText");
+      const closeMediaPlanBtn = document.getElementById("closeMediaPlanBtn");
+      uploadMediaPlanBtn.addEventListener("click", () => { mediaPlanPanel.classList.add("visible"); });
+      closeMediaPlanBtn.addEventListener("click", () => { mediaPlanPanel.classList.remove("visible"); });
+      if (window.location.search.includes("media_plan=1")) {
+        try {
+          const stored = sessionStorage.getItem("adsAgent_mediaPlan");
+          if (stored) { mediaPlanText.value = stored; mediaPlanPanel.classList.add("visible"); }
+        } catch (e) {}
+      }
+      const urlQ = new URLSearchParams(window.location.search).get("q");
+      if (urlQ) { messageInput.value = urlQ; messageInput.focus(); }
+
       const out = document.getElementById("output");
       const messageInput = document.getElementById("message");
       const sendBtn = document.getElementById("sendBtn");
@@ -321,15 +380,18 @@
       async function runSend() {
         const message = messageInput.value.trim();
         const profileId = document.getElementById("profileId").value.trim();
+        const mediaPlan = document.getElementById("mediaPlanText").value.trim();
         if (!message) return;
 
         setThinking(true);
 
         try {
+          const payload = { message, profileId: profileId || undefined };
+          if (mediaPlan) payload.media_plan = mediaPlan;
           const resp = await fetch(BACKEND_URL + "/agent/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message, profileId }),
+            body: JSON.stringify(payload),
           });
           const data = await resp.json();
           setThinking(false);
