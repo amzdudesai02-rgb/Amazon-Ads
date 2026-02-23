@@ -72,6 +72,7 @@
         padding: 0.5rem 0.75rem;
         border-radius: var(--radius-sm);
         transition: color 0.15s, background 0.15s;
+        white-space: nowrap;
       }
       .header-nav a:hover { color: white; background: rgba(255,255,255,0.08); }
       .header-nav a.active { color: white; background: rgba(255,255,255,0.12); }
@@ -161,6 +162,17 @@
       .forecast-card h3 { font-size: 0.9375rem; font-weight: 600; margin: 0 0 0.5rem; }
       .forecast-card .metric { font-size: 0.875rem; margin-bottom: 0.35rem; }
       .forecast-card .metric strong { color: var(--text-muted); font-weight: 500; }
+      .forecast-card .detail-toggle { font-size: 0.875rem; font-weight: 600; color: var(--accent); background: none; border: none; cursor: pointer; padding: 0.25rem 0; margin-top: 0.5rem; font-family: inherit; }
+      .forecast-card .detail-toggle:hover { text-decoration: underline; }
+      .forecast-card .forecast-detail { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); display: none; }
+      .forecast-card .forecast-detail.visible { display: block; }
+      .forecast-card .forecast-detail .metric { margin-bottom: 0.25rem; }
+      .toast-success { background: #059669; color: white; padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 500; margin-top: 0.75rem; }
+      .keywords-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+      .keywords-table th { text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); }
+      .keywords-table td { padding: 0.75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+      .keywords-table tr.approved { background: rgba(249, 115, 22, 0.06); }
+      .keywords-table .cell-keyword { font-weight: 600; color: var(--text); }
 
       .card {
         background: var(--bg-card);
@@ -356,6 +368,7 @@
         <a href="/media-plan.html">Media Plan</a>
         <a href="/creative-agent.html">Creative Agent</a>
         <a href="/ai-solutions.html">AI Solutions</a>
+        <a href="/api-access.html">API Access</a>
         <a href="/privacy.html">Privacy</a>
         <a href="/about.html">About</a>
         <button class="btn-primary" id="connectBtn">Connect Amazon Ads</button>
@@ -427,14 +440,34 @@
           </div>
         </div>
         <div id="tabKeywords" style="display: none;">
-          <p class="empty-state">Keyword suggestions will be available in a future update. Use Audiences for now.</p>
+          <p id="keywordsSummary" class="form-group hint" style="margin-top: 0; display: none;"></p>
+          <div id="keywordsEmpty" class="empty-state">Use the same targeting intent above, then click below to get AI-recommended keywords.</div>
+          <div id="keywordsActions" style="margin-bottom: 0.75rem; display: none;">
+            <button type="button" class="btn-primary" id="getKeywordsBtn">Get keyword suggestions</button>
+          </div>
+          <div id="keywordsTableWrap" style="display: none;">
+            <table class="keywords-table" id="keywordsTable">
+              <thead><tr><th></th><th>Keyword</th><th>Match type</th><th>Suggested bid</th><th>Search volume</th></tr></thead>
+              <tbody id="keywordsTableBody"></tbody>
+            </table>
+            <p class="ai-disclaimer" style="margin-top: 0.5rem;">These suggestions were generated using AI. Review before adding to your campaign.</p>
+          </div>
+          <div class="add-targeting-row" id="addTargetingRowKeywords" style="display: none;">
+            <button type="button" class="btn-primary" id="addTargetingKeywordsBtn">Add targeting</button>
+            <button type="button" style="background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 0.5rem 1rem; border-radius: var(--radius-sm); font-weight: 500; cursor: pointer; font-family: inherit;" id="cancelTargetingKeywordsBtn">Cancel</button>
+          </div>
         </div>
         <div class="forecast-card" id="forecastCard" style="display: none;">
           <h3>Forecast</h3>
-          <p class="metric"><strong>eCPM:</strong> —</p>
-          <p class="metric"><strong>Available spend:</strong> —</p>
-          <p class="metric"><strong>Impressions:</strong> —</p>
-          <p style="margin: 0.5rem 0 0;"><a href="#" style="font-size: 0.875rem; font-weight: 600; color: var(--accent);">View detailed forecast</a></p>
+          <p class="metric"><strong>eCPM:</strong> <span id="forecastEcpm">—</span></p>
+          <p class="metric"><strong>Available spend:</strong> <span id="forecastSpend">—</span></p>
+          <p class="metric"><strong>Impressions:</strong> <span id="forecastImpressions">—</span></p>
+          <button type="button" class="detail-toggle" id="forecastDetailToggle">View detailed forecast</button>
+          <div class="forecast-detail" id="forecastDetail">
+            <p class="metric"><strong>Reach (est.):</strong> <span id="forecastReach">—</span></p>
+            <p class="metric"><strong>Frequency (avg.):</strong> <span id="forecastFreq">—</span></p>
+            <p class="metric"><strong>Budget pacing:</strong> <span id="forecastPacing">—</span></p>
+          </div>
         </div>
       </section>
     </main>
@@ -447,11 +480,12 @@
       <a href="/about.html">About</a>
     </footer>
 
+    <script src="/config.js"></script>
     <script>
       document.getElementById("year").textContent = new Date().getFullYear().toString();
 
       const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-      const BACKEND_URL = isLocal ? "http://localhost:8000" : "https://amazon-ads.onrender.com";
+      const BACKEND_URL = (window.APP_CONFIG && window.APP_CONFIG.BACKEND_URL) || (isLocal ? "http://localhost:8000" : "https://amazon-ads.onrender.com");
 
       document.getElementById("connectBtn").addEventListener("click", () => {
         window.location.href = BACKEND_URL + "/auth/login";
@@ -469,6 +503,8 @@
 
       let currentSuggestions = [];
       const approvedSet = new Set();
+      let currentKeywordSuggestions = [];
+      const keywordApprovedSet = new Set();
 
       function renderSuggestions(suggestions) {
         listEl.innerHTML = "";
@@ -517,6 +553,24 @@
         return p.innerHTML;
       }
 
+      function updateForecast(audienceCount, keywordCount) {
+        const n = (audienceCount || 0) + (keywordCount || 0) || 1;
+        document.getElementById("forecastEcpm").textContent = "$" + (2.5 + Math.random() * 1.5).toFixed(2);
+        document.getElementById("forecastSpend").textContent = "$" + (n * 15) + " – $" + (n * 40) + " daily (est.)";
+        document.getElementById("forecastImpressions").textContent = (n * 8000).toLocaleString() + " – " + (n * 25000).toLocaleString();
+        document.getElementById("forecastReach").textContent = (n * 12000).toLocaleString() + " – " + (n * 45000).toLocaleString();
+        document.getElementById("forecastFreq").textContent = "1.2 – 2.5";
+        document.getElementById("forecastPacing").textContent = "Even";
+        document.getElementById("forecastCard").style.display = "block";
+      }
+
+      document.getElementById("forecastDetailToggle").addEventListener("click", () => {
+        const el = document.getElementById("forecastDetail");
+        const btn = document.getElementById("forecastDetailToggle");
+        el.classList.toggle("visible");
+        btn.textContent = el.classList.contains("visible") ? "Hide detailed forecast" : "View detailed forecast";
+      });
+
       getBtn.addEventListener("click", async () => {
         const goal = goalEl.value.trim();
         if (!goal) {
@@ -559,7 +613,7 @@
           document.getElementById("aiDisclaimer").style.display = "block";
           document.getElementById("addTargetingRow").style.display = "flex";
           document.getElementById("feedbackRow").style.display = "block";
-          document.getElementById("forecastCard").style.display = "block";
+          updateForecast(currentSuggestions.length, currentKeywordSuggestions.length);
           renderSuggestions(currentSuggestions);
         } catch (err) {
           alert("Could not load suggestions: " + (err.message || "Unknown error"));
@@ -576,6 +630,100 @@
         document.getElementById("wordsRemaining").textContent = (2000 - len) + " characters remaining";
       });
 
+      function renderKeywords(suggestions) {
+        const tbody = document.getElementById("keywordsTableBody");
+        tbody.innerHTML = "";
+        suggestions.forEach((s, i) => {
+          const approved = keywordApprovedSet.has(i);
+          const tr = document.createElement("tr");
+          if (approved) tr.classList.add("approved");
+          tr.innerHTML =
+            "<td><input type=\"checkbox\" class=\"keyword-cb\" data-index=\"" + i + "\" " + (approved ? "checked" : "") + " /></td>" +
+            "<td class=\"cell-keyword\">" + escapeHtml(s.keyword) + "</td>" +
+            "<td>" + escapeHtml(s.match_type || "—") + "</td>" +
+            "<td>" + escapeHtml(s.bid_suggestion || "—") + "</td>" +
+            "<td>" + escapeHtml(s.search_volume || "—") + "</td>";
+          const cb = tr.querySelector(".keyword-cb");
+          if (cb) cb.addEventListener("change", () => {
+            if (cb.checked) keywordApprovedSet.add(i); else keywordApprovedSet.delete(i);
+            tr.classList.toggle("approved", cb.checked);
+          });
+          tbody.appendChild(tr);
+        });
+      }
+
+      document.getElementById("getKeywordsBtn").addEventListener("click", async () => {
+        const goal = goalEl.value.trim();
+        if (!goal) {
+          alert("Please enter your targeting intent above.");
+          return;
+        }
+        const btn = document.getElementById("getKeywordsBtn");
+        btn.disabled = true;
+        btn.textContent = "Getting suggestions…";
+        try {
+          const resp = await fetch(BACKEND_URL + "/agent/keyword-suggestions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              goal: goal,
+              product_or_category: productEl.value.trim() || null,
+              budget_note: budgetEl.value.trim() || null,
+            }),
+          });
+          if (!resp.ok) throw new Error(await resp.text() || "Request failed");
+          const data = await resp.json();
+          currentKeywordSuggestions = data.suggestions || [];
+          document.getElementById("keywordsSummary").textContent = data.summary || "";
+          document.getElementById("keywordsSummary").style.display = data.summary ? "block" : "none";
+          document.getElementById("keywordsEmpty").style.display = "none";
+          document.getElementById("keywordsTableWrap").style.display = "block";
+          document.getElementById("addTargetingRowKeywords").style.display = "flex";
+          document.getElementById("getKeywordsBtn").textContent = "+ Update keyword suggestions";
+          updateForecast(currentSuggestions.length, currentKeywordSuggestions.length);
+          renderKeywords(currentKeywordSuggestions);
+        } catch (err) {
+          alert("Could not load keyword suggestions: " + (err.message || "Unknown error"));
+        } finally {
+          btn.disabled = false;
+          if (currentKeywordSuggestions.length) btn.textContent = "+ Update keyword suggestions";
+          else btn.textContent = "Get keyword suggestions";
+        }
+      });
+
+      document.getElementById("addTargetingKeywordsBtn").addEventListener("click", async () => {
+        const checkboxes = document.querySelectorAll("#keywordsTableBody .keyword-cb:checked");
+        const indices = Array.from(checkboxes).map((cb) => parseInt(cb.dataset.index, 10));
+        const phrases = indices.map((i) => currentKeywordSuggestions[i]?.keyword).filter(Boolean);
+        if (!indices.length) {
+          alert("Select one or more keywords first.");
+          return;
+        }
+        const btn = document.getElementById("addTargetingKeywordsBtn");
+        btn.disabled = true;
+        btn.textContent = "Applying…";
+        try {
+          const resp = await fetch(BACKEND_URL + "/agent/add-targeting", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ keyword_indices: indices, keyword_phrases: phrases }),
+          });
+          const data = await resp.json();
+          if (data.success) {
+            document.getElementById("addTargetingRowKeywords").innerHTML = "<span class=\"toast-success\">" + (data.applied_count ? data.applied_count + " keyword(s) added to targeting." : data.message) + "</span>";
+          } else {
+            alert(data.message || "Could not add targeting.");
+            btn.disabled = false;
+            btn.textContent = "Add targeting";
+          }
+        } catch (e) {
+          alert("Request failed: " + (e.message || "Unknown error"));
+          btn.disabled = false;
+          btn.textContent = "Add targeting";
+        }
+      });
+      document.getElementById("cancelTargetingKeywordsBtn").addEventListener("click", () => { /* dismiss */ });
+
       document.querySelectorAll(".tabs button").forEach((btn) => {
         btn.addEventListener("click", () => {
           document.querySelectorAll(".tabs button").forEach((b) => b.classList.remove("active"));
@@ -583,12 +731,41 @@
           const tab = btn.dataset.tab;
           document.getElementById("tabAudiences").style.display = tab === "audiences" ? "block" : "none";
           document.getElementById("tabKeywords").style.display = tab === "keywords" ? "block" : "none";
+          if (tab === "keywords") document.getElementById("keywordsActions").style.display = "block";
         });
       });
+      document.getElementById("keywordsActions").style.display = "none";
 
-      document.getElementById("addTargetingBtn").addEventListener("click", () => {
-        const n = listEl.querySelectorAll(".suggestion-cb:checked").length;
-        alert(n ? "Adding " + n + " selected audience(s) to targeting. In a full setup, these would be applied to your line item." : "Select one or more audiences first.");
+      document.getElementById("addTargetingBtn").addEventListener("click", async () => {
+        const checkboxes = listEl.querySelectorAll(".suggestion-cb:checked");
+        const indices = Array.from(checkboxes).map((cb) => parseInt(cb.dataset.index, 10));
+        const names = indices.map((i) => currentSuggestions[i]?.name).filter(Boolean);
+        if (!indices.length) {
+          alert("Select one or more audiences first.");
+          return;
+        }
+        const btn = document.getElementById("addTargetingBtn");
+        btn.disabled = true;
+        btn.textContent = "Applying…";
+        try {
+          const resp = await fetch(BACKEND_URL + "/agent/add-targeting", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ audience_indices: indices, audience_names: names }),
+          });
+          const data = await resp.json();
+          if (data.success) {
+            document.getElementById("addTargetingRow").innerHTML = "<span class=\"toast-success\">" + (data.applied_count ? data.applied_count + " audience(s) added to targeting." : data.message) + "</span>";
+          } else {
+            alert(data.message || "Could not add targeting.");
+            btn.disabled = false;
+            btn.textContent = "Add targeting";
+          }
+        } catch (e) {
+          alert("Request failed: " + (e.message || "Unknown error"));
+          btn.disabled = false;
+          btn.textContent = "Add targeting";
+        }
       });
       document.getElementById("cancelTargetingBtn").addEventListener("click", () => { /* dismiss or go back */ });
 

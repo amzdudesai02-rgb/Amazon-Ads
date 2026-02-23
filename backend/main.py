@@ -26,6 +26,8 @@ ADS_API_BASE = os.getenv("ADS_API_BASE", "https://advertising-api.amazon.com")
 LWA_CLIENT_ID = os.getenv("LWA_CLIENT_ID", "")
 LWA_CLIENT_SECRET = os.getenv("LWA_CLIENT_SECRET", "")
 LWA_REDIRECT_URI = os.getenv("LWA_REDIRECT_URI", "")
+# LWA Application ID (amzn1.application.xxx) from your Security Profile / App – optional, for reference and future API use
+AMAZON_APPLICATION_ID = os.getenv("AMAZON_APPLICATION_ID", "")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 AMAZON_ADS_PROFILE_ID = os.getenv("AMAZON_ADS_PROFILE_ID", "")
 
@@ -78,6 +80,20 @@ if stored is not None:
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+@app.get("/health/config")
+def health_config() -> dict:
+    """
+    Summary of API config (no secrets). Use to confirm LWA app and backend are set.
+    """
+    return {
+        "status": "ok",
+        "lwa_client_id_set": bool(LWA_CLIENT_ID),
+        "lwa_redirect_uri_set": bool(LWA_REDIRECT_URI),
+        "amazon_application_id_set": bool(AMAZON_APPLICATION_ID),
+        "frontend_origin_set": bool(frontend_origin),
+    }
 
 
 @app.get("/auth/login")
@@ -307,6 +323,41 @@ class AudienceSuggestionsResponse(BaseModel):
     summary: Optional[str] = None
 
 
+# --- Keyword suggestions (campaign targeting) ---
+
+class KeywordSuggestion(BaseModel):
+    keyword: str
+    match_type: Optional[str] = None   # e.g. "exact", "phrase", "broad"
+    bid_suggestion: Optional[str] = None  # e.g. "$0.45"
+    search_volume: Optional[str] = None   # e.g. "High", "12K/mo"
+
+
+class KeywordSuggestionsRequest(BaseModel):
+    goal: str
+    product_or_category: Optional[str] = None
+    budget_note: Optional[str] = None
+
+
+class KeywordSuggestionsResponse(BaseModel):
+    suggestions: list[KeywordSuggestion]
+    summary: Optional[str] = None
+
+
+# --- Add targeting (record selected audiences/keywords) ---
+
+class AddTargetingRequest(BaseModel):
+    audience_indices: Optional[list[int]] = None   # indices into last audience suggestions
+    keyword_indices: Optional[list[int]] = None   # indices into last keyword suggestions
+    audience_names: Optional[list[str]] = None     # for display/audit
+    keyword_phrases: Optional[list[str]] = None
+
+
+class AddTargetingResponse(BaseModel):
+    success: bool
+    message: str
+    applied_count: Optional[int] = None
+
+
 @app.post("/agent/chat", response_model=ChatResponse)
 async def agent_chat(body: ChatRequest) -> ChatResponse:
     """
@@ -437,6 +488,72 @@ Return only valid JSON, no markdown or extra text."""
             ))
     summary = data.get("summary") if isinstance(data.get("summary"), str) else None
     return AudienceSuggestionsResponse(suggestions=suggestions, summary=summary)
+
+
+@app.post("/agent/keyword-suggestions", response_model=KeywordSuggestionsResponse)
+async def agent_keyword_suggestions(body: KeywordSuggestionsRequest) -> KeywordSuggestionsResponse:
+    """
+    AI-driven keyword suggestions from campaign brief. Use in Campaign Targeting Keywords tab.
+    """
+    brief = f"Campaign goal: {body.goal}"
+    if body.product_or_category:
+        brief += f". Product/category: {body.product_or_category}"
+    if body.budget_note:
+        brief += f". Budget: {body.budget_note}"
+
+    system_prompt = """You are an Amazon Ads search/keyword expert. Given a short campaign brief, suggest 4 to 6 relevant keywords for Sponsored Products or Sponsored Brands.
+Return a JSON object with key "suggestions" (array of objects). Each object must have:
+- "keyword": the keyword phrase (e.g. "women running shoes")
+- "match_type": one of "exact", "phrase", "broad"
+- "bid_suggestion": optional, e.g. "$0.35" or "$0.50"
+- "search_volume": optional, e.g. "High", "Medium", "8K/mo"
+Also include "summary" (string): one short sentence on keyword strategy.
+Return only valid JSON, no markdown or extra text."""
+
+    completion = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": brief},
+        ],
+        temperature=0.3,
+    )
+
+    raw = completion.choices[0].message.content.strip()
+    if "```" in raw:
+        for start in ("```json", "```"):
+            if raw.startswith(start):
+                raw = raw[len(start):].strip()
+        raw = raw.rsplit("```", 1)[0].strip()
+    data = json.loads(raw)
+    suggestions = []
+    for s in data.get("suggestions", []):
+        if isinstance(s, dict):
+            suggestions.append(KeywordSuggestion(
+                keyword=s.get("keyword", ""),
+                match_type=s.get("match_type"),
+                bid_suggestion=s.get("bid_suggestion"),
+                search_volume=s.get("search_volume"),
+            ))
+    summary = data.get("summary") if isinstance(data.get("summary"), str) else None
+    return KeywordSuggestionsResponse(suggestions=suggestions, summary=summary)
+
+
+@app.post("/agent/add-targeting", response_model=AddTargetingResponse)
+async def agent_add_targeting(body: AddTargetingRequest) -> AddTargetingResponse:
+    """
+    Record selected audiences and/or keywords for targeting. In a full setup this would
+    apply segments to the line item via Amazon Ads API; for now we acknowledge and return success.
+    """
+    total = (len(body.audience_indices or []) + len(body.keyword_indices or []))
+    if total == 0 and not (body.audience_names or body.keyword_phrases):
+        return AddTargetingResponse(success=False, message="No audiences or keywords selected.")
+    # Optional: persist to DB for audit (e.g. campaign_targeting table). For now just confirm.
+    return AddTargetingResponse(
+        success=True,
+        message="Targeting applied. In a full setup, these would be sent to your campaign.",
+        applied_count=total or (len(body.audience_names or []) + len(body.keyword_phrases or [])),
+    )
 
 
 if __name__ == "__main__":

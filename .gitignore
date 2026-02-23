@@ -17,3 +17,5 @@ node_modules/
 .vscode/
 *.swp
 *.swo
+.vercel
+.env*.local

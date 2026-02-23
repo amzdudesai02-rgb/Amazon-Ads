@@ -1,0 +1,15 @@
+[Unit]
+Description=Amazon Ads AI Agent API (FastAPI)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/amazon-ads/backend
+Environment=PATH=/var/www/amazon-ads/backend/venv/bin
+ExecStart=/var/www/amazon-ads/backend/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
