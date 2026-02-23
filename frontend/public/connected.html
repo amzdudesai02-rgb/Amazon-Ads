@@ -38,23 +38,34 @@
         right: 0;
         background: var(--bg);
         color: white;
-        padding: 0.75rem 1.5rem;
+        padding: 0 1.25rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: var(--shadow-lg);
-        min-height: 56px;
+        min-height: 60px;
+        z-index: 100;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
       }
-      .header-brand { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: inherit; }
-      .header-logo { height: 36px; width: auto; display: block; object-fit: contain; }
+      .header-brand { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: inherit; flex-shrink: 0; }
+      .header-logo { height: 38px; width: auto; display: block; object-fit: contain; }
       .header-brand-text { display: none; }
       .header-brand-text.fallback { display: inline-flex; align-items: center; }
       .header-brand-text { font-weight: 700; font-size: 1.25rem; letter-spacing: -0.02em; line-height: 1; }
       .header-brand-text .amz { color: var(--accent); }
       .header-brand-text .dudes { color: transparent; -webkit-text-stroke: 1.5px #94a3b8; font-weight: 600; }
-      .header-nav { display: flex; gap: 0.5rem; }
-      .header-nav a { color: #94a3b8; text-decoration: none; font-size: 0.875rem; font-weight: 500; padding: 0.5rem 0.75rem; border-radius: 8px; white-space: nowrap; }
+      .nav-toggle { display: none; align-items: center; justify-content: center; width: 44px; height: 44px; background: rgba(255,255,255,0.08); border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 1.25rem; padding: 0; }
+      .nav-toggle:hover { background: rgba(255,255,255,0.12); }
+      .header-nav { display: flex; align-items: center; gap: 0.15rem; }
+      .header-nav a { color: #94a3b8; text-decoration: none; font-size: 0.8125rem; font-weight: 500; padding: 0.5rem 0.65rem; border-radius: 6px; transition: color 0.2s, background 0.2s; white-space: nowrap; }
       .header-nav a:hover { color: white; background: rgba(255,255,255,0.08); }
+      @media (max-width: 960px) {
+        .nav-toggle { display: flex; }
+        .header-nav { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg); flex-direction: column; align-items: stretch; padding: 0.5rem; gap: 0.25rem; border-bottom: 1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 24px rgba(0,0,0,0.2); display: none; }
+        .header-nav.open { display: flex; }
+        .header-nav a { padding: 0.75rem 1rem; font-size: 0.9375rem; }
+      }
+      main.card { margin-top: 60px; }
       .card {
         background: white;
         border-radius: var(--radius);
@@ -84,7 +95,8 @@
         <img src="images.png?v=2" alt="amzDUDES" class="header-logo" onerror="if(this.dataset.fallback) { this.style.display='none'; this.nextElementSibling.classList.add('fallback'); } else { this.dataset.fallback='1'; this.src='logo.png?v=2'; this.onerror=null; }" onload="this.nextElementSibling.classList.remove('fallback');" />
         <span class="header-brand-text fallback"><span class="amz">amz</span><span class="dudes">DUDES</span></span>
       </a>
-      <nav class="header-nav">
+      <button type="button" class="nav-toggle" id="navToggle" aria-label="Open menu">&#9776;</button>
+      <nav class="header-nav" id="headerNav">
         <a href="/">Home</a>
         <a href="/agent.html">Ads Agent</a>
         <a href="/campaign-targeting.html">Campaign Targeting</a>
@@ -99,7 +111,10 @@
     <main class="card">
       <h1>You’re connected</h1>
       <p>Your Amazon Ads account is linked. You can now chat with your ad agent on the home page.</p>
-      <a href="/agent.html" class="btn">Go to Ads Agent</a>
+<a href="/agent.html" class="btn">Go to Ads Agent</a>
     </main>
+    <script>
+      var _nt = document.getElementById("navToggle"); var _hn = document.getElementById("headerNav"); if (_nt && _hn) _nt.addEventListener("click", function() { _hn.classList.toggle("open"); });
+    </script>
   </body>
-  </html>
+</html>
