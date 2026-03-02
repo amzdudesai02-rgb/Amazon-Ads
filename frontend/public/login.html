@@ -277,7 +277,8 @@
       <button type="button" class="nav-toggle" id="navToggle" aria-label="Open menu">&#9776;</button>
       <nav class="header-nav" id="headerNav">
         <a href="/">Home</a>
-        <a href="/login.html">Login</a>
+        <a href="/login.html" class="active">Login</a>
+        <a href="/signup.html" id="navSignupLink">Sign up</a>
       </nav>
     </header>
 
@@ -296,6 +297,9 @@
           </div>
           <button type="submit" class="btn-primary">Continue to Ads Agent</button>
         </form>
+        <div class="auth-swap" style="margin-top: 1rem; text-align: center; font-size: 0.875rem; color: var(--text-muted);">
+          Don't have an account? <a href="/signup.html" id="signupLink">Sign up</a>
+        </div>
         <div class="login-footer">
           By continuing, you agree to our
           <a href="/privacy.html">Privacy Policy</a>.
@@ -327,6 +331,10 @@
       (function () {
         var params = new URLSearchParams(window.location.search);
         var redirect = params.get("redirect") || "/";
+        var signupLink = document.getElementById("signupLink");
+        var navSignupLink = document.getElementById("navSignupLink");
+        if (signupLink) signupLink.href = "/signup.html?redirect=" + encodeURIComponent(redirect);
+        if (navSignupLink) navSignupLink.href = "/signup.html?redirect=" + encodeURIComponent(redirect);
 
         if (window.AmzAdsAuth && window.AmzAdsAuth.isLoggedIn()) {
           window.location.href = redirect;

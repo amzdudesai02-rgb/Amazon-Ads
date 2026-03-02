@@ -33,8 +33,9 @@
     const path = window.location.pathname || "/";
     const isHome = path === "/" || path.endsWith("/index.html");
     const isLogin = path.endsWith("/login.html");
+    const isSignup = path.endsWith("/signup.html");
 
-    if (!isHome && !isLogin && !isLoggedIn()) {
+    if (!isHome && !isLogin && !isSignup && !isLoggedIn()) {
       const redirectTarget = path + window.location.search;
       const qp = encodeURIComponent(redirectTarget);
       window.location.href = "/login.html?redirect=" + qp;
