@@ -37,7 +37,7 @@
       }
 
       .header {
-        background: linear-gradient(90deg, #ffffff 0%, #ffffff 10%, #e2e8f0 16%, #94a3b8 26%, #475569 36%, #0f172a 48%, #0f172a 100%);
+        background: var(--bg);
         color: white;
         padding: 0 1.25rem;
         display: flex;
@@ -278,7 +278,6 @@
       <nav class="header-nav" id="headerNav">
         <a href="/">Home</a>
         <a href="/login.html" class="active">Login</a>
-        <a href="/signup.html" id="navSignupLink">Sign up</a>
       </nav>
     </header>
 
@@ -298,7 +297,7 @@
           <button type="submit" class="btn-primary">Continue to Ads Agent</button>
         </form>
         <div class="auth-swap" style="margin-top: 1rem; text-align: center; font-size: 0.875rem; color: var(--text-muted);">
-          Don't have an account? <a href="/signup.html" id="signupLink">Sign up</a>
+          If you don't have an account, please <a href="/signup.html" id="signupLink">register</a> first, then login.
         </div>
         <div class="login-footer">
           By continuing, you agree to our
@@ -332,9 +331,7 @@
         var params = new URLSearchParams(window.location.search);
         var redirect = params.get("redirect") || "/";
         var signupLink = document.getElementById("signupLink");
-        var navSignupLink = document.getElementById("navSignupLink");
         if (signupLink) signupLink.href = "/signup.html?redirect=" + encodeURIComponent(redirect);
-        if (navSignupLink) navSignupLink.href = "/signup.html?redirect=" + encodeURIComponent(redirect);
 
         if (window.AmzAdsAuth && window.AmzAdsAuth.isLoggedIn()) {
           window.location.href = redirect;
