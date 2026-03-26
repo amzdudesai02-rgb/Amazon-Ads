@@ -483,6 +483,15 @@ async def agent_chat(body: ChatRequest) -> ChatResponse:
     return ChatResponse(reply=reply_text)
 
 
+# Allow simple browser testing:
+# Visiting `/agent/chat` directly uses GET, but the real endpoint expects POST JSON.
+@app.get("/agent/chat")
+def agent_chat_get() -> dict:
+    return {
+        "detail": "Use POST /agent/chat with JSON body: {\"message\": \"...\", \"profile_id\": \"...\"}"
+    }
+
+
 @app.post("/agent/audience-suggestions", response_model=AudienceSuggestionsResponse)
 async def agent_audience_suggestions(body: AudienceSuggestionsRequest) -> AudienceSuggestionsResponse:
     """
