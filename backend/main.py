@@ -7,9 +7,9 @@ from typing import Dict, Optional
 import secrets
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, Response
 from pydantic import BaseModel
 import httpx
 from openai import OpenAI
@@ -56,6 +56,41 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Extra safety: ensure CORS headers exist on ALL responses (including error responses).
+# Some hosted/proxy edge cases can omit middleware headers; this guarantees browser access.
+allowed_origins_normalized = {o.strip().rstrip("/") for o in allowed_origins if o}
+
+
+@app.middleware("http")
+async def cors_fallback_middleware(request: Request, call_next):
+    origin = request.headers.get("origin")
+    if not origin:
+        return await call_next(request)
+
+    origin_norm = origin.strip().rstrip("/")
+    if origin_norm not in allowed_origins_normalized:
+        return await call_next(request)
+
+    if request.method == "OPTIONS":
+        return Response(
+            status_code=200,
+            headers={
+                "Access-Control-Allow-Origin": origin,
+                "Access-Control-Allow-Credentials": "true",
+                "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+                "Access-Control-Allow-Headers": request.headers.get(
+                    "access-control-request-headers", "content-type"
+                ),
+                "Vary": "Origin",
+            },
+        )
+
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = origin
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Vary"] = "Origin"
+    return response
 
 
 @app.get("/")
