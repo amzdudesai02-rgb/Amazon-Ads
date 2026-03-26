@@ -92,7 +92,12 @@ class CampaignSnapshot(Base):
 
 def init_db() -> None:
     """Create tables if they do not exist."""
-    Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=engine)
+    except OperationalError:
+        # Recover from transient SSL disconnects during startup.
+        engine.dispose()
+        Base.metadata.create_all(bind=engine)
 
 
 def get_session() -> Session:
@@ -100,8 +105,13 @@ def get_session() -> Session:
 
 
 def get_tokens() -> Optional[AmazonAdsToken]:
-    with get_session() as db:
-        return db.query(AmazonAdsToken).first()
+    try:
+        with get_session() as db:
+            return db.query(AmazonAdsToken).first()
+    except OperationalError:
+        engine.dispose()
+        with get_session() as db:
+            return db.query(AmazonAdsToken).first()
 
 
 def save_tokens(access_token: str, refresh_token: str, expires_at: datetime) -> None:
@@ -128,39 +138,67 @@ def get_or_create_default_user_id() -> int:
     """
     For now we assume a single user. This returns its ID, creating it if needed.
     """
-    with get_session() as db:
-        user = db.query(User).first()
-        if user is None:
-            user = User()
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-        return user.id
+    def _get_once() -> int:
+        with get_session() as db:
+            user = db.query(User).first()
+            if user is None:
+                user = User()
+                db.add(user)
+                db.commit()
+                db.refresh(user)
+            return user.id
+
+    try:
+        return _get_once()
+    except OperationalError:
+        engine.dispose()
+        return _get_once()
 
 
 def create_chat_session(user_id: int, title: Optional[str] = None) -> int:
-    with get_session() as db:
-        session = ChatSession(user_id=user_id, title=title)
-        db.add(session)
-        db.commit()
-        db.refresh(session)
-        return session.id
+    def _create_once() -> int:
+        with get_session() as db:
+            session = ChatSession(user_id=user_id, title=title)
+            db.add(session)
+            db.commit()
+            db.refresh(session)
+            return session.id
+
+    try:
+        return _create_once()
+    except OperationalError:
+        engine.dispose()
+        return _create_once()
 
 
 def log_chat_message(session_id: int, role: str, content: str) -> None:
-    with get_session() as db:
-        msg = ChatMessage(session_id=session_id, role=role, content=content)
-        db.add(msg)
-        # update last_message_at on the session
-        session = db.query(ChatSession).get(session_id)
-        if session is not None:
-            session.last_message_at = datetime.utcnow()
-        db.commit()
+    def _log_once() -> None:
+        with get_session() as db:
+            msg = ChatMessage(session_id=session_id, role=role, content=content)
+            db.add(msg)
+            # update last_message_at on the session
+            session = db.query(ChatSession).get(session_id)
+            if session is not None:
+                session.last_message_at = datetime.utcnow()
+            db.commit()
+
+    try:
+        _log_once()
+    except OperationalError:
+        engine.dispose()
+        _log_once()
 
 
 def save_campaign_snapshot(profile_id: str, raw_json: str, note: Optional[str] = None) -> None:
-    with get_session() as db:
-        snap = CampaignSnapshot(profile_id=profile_id, raw_json=raw_json, note=note)
-        db.add(snap)
-        db.commit()
+    def _save_once() -> None:
+        with get_session() as db:
+            snap = CampaignSnapshot(profile_id=profile_id, raw_json=raw_json, note=note)
+            db.add(snap)
+            db.commit()
+
+    try:
+        _save_once()
+    except OperationalError:
+        engine.dispose()
+        _save_once()
 
