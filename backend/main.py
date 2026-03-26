@@ -86,7 +86,14 @@ async def cors_fallback_middleware(request: Request, call_next):
             },
         )
 
-    response = await call_next(request)
+    try:
+        response = await call_next(request)
+    except Exception:
+        # If an exception happens inside the route handler (e.g., DB error),
+        # Starlette may return its own 500 response. We still attach CORS
+        # headers so the browser can read the response.
+        response = Response(status_code=500, content=b"Internal Server Error")
+
     response.headers["Access-Control-Allow-Origin"] = origin
     response.headers["Access-Control-Allow-Credentials"] = "true"
     response.headers["Vary"] = "Origin"
