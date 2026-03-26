@@ -405,7 +405,7 @@
         setThinking(true);
 
         try {
-          const payload = { message, profileId: profileId || undefined };
+          const payload = { message, profile_id: profileId || undefined };
           if (mediaPlan) payload.media_plan = mediaPlan;
           const resp = await fetch(BACKEND_URL + "/agent/chat", {
             method: "POST",

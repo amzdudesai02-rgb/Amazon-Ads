@@ -416,9 +416,14 @@ async def agent_chat(body: ChatRequest) -> ChatResponse:
     - We pass the data and the original question to the LLM to generate a reply.
     """
     # Basic persistence: one default user and a new session per request.
-    user_id = db.get_or_create_default_user_id()
-    session_id = db.create_chat_session(user_id=user_id, title=body.message[:80])
-    db.log_chat_message(session_id, "user", body.message)
+    # If the DB is temporarily unavailable (hosted SSL disconnects), do not fail the chat.
+    session_id: Optional[int] = None
+    try:
+        user_id = db.get_or_create_default_user_id()
+        session_id = db.create_chat_session(user_id=user_id, title=body.message[:80])
+        db.log_chat_message(session_id, "user", body.message)
+    except Exception:
+        session_id = None
 
     profile_id = body.profile_id or AMAZON_ADS_PROFILE_ID
     campaigns_data = None
@@ -457,16 +462,23 @@ async def agent_chat(body: ChatRequest) -> ChatResponse:
         },
     ]
 
-    completion = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=messages,
-        temperature=0.2,
-    )
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages,
+            temperature=0.2,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"LLM error: {str(exc)[:300]}") from exc
 
     reply_text = completion.choices[0].message.content
 
     # Persist assistant reply and (optionally) a campaign snapshot.
-    db.log_chat_message(session_id, "assistant", reply_text)
+    if session_id is not None:
+        try:
+            db.log_chat_message(session_id, "assistant", reply_text)
+        except Exception:
+            pass
 
     if campaigns_data is not None and profile_id:
         try:
