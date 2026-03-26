@@ -39,13 +39,15 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 app = FastAPI(title="Amazon Ads AI Agent")
 
 # CORS: allow local dev plus deployed frontend.
-frontend_origin = os.getenv("FRONTEND_ORIGIN")
+# Note: CORS origin matching is strict, so normalize/expand to avoid common trailing-slash mistakes.
+frontend_origin_raw = os.getenv("FRONTEND_ORIGIN") or ""
+frontend_origin = frontend_origin_raw.strip().rstrip("/")
 allowed_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
 if frontend_origin:
-    allowed_origins.append(frontend_origin)
+    allowed_origins.extend([frontend_origin, frontend_origin + "/"])
 
 app.add_middleware(
     CORSMiddleware,
