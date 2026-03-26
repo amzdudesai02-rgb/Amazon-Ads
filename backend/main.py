@@ -173,7 +173,8 @@ async def auth_callback(code: str, state: Optional[str] = None) -> dict:
 
     # After successful auth, redirect to frontend if configured.
     if frontend_origin:
-        return RedirectResponse(url=f"{frontend_origin}/connected?status=ok", status_code=302)
+        # Frontend is deployed as static HTML pages, so use connected.html explicitly.
+        return RedirectResponse(url=f"{frontend_origin}/connected.html?status=ok", status_code=302)
 
     return {"status": "ok"}
 
