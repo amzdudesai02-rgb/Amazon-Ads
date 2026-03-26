@@ -13,6 +13,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker, Session
+from sqlalchemy.pool import NullPool
 
 
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -27,6 +28,9 @@ engine = create_engine(
     future=True,
     pool_pre_ping=True,
     pool_recycle=300,
+    # Render/Neon can occasionally close idle SSL connections; NullPool avoids
+    # stale reused connections and makes the token save/chat endpoints reliable.
+    poolclass=NullPool,
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
