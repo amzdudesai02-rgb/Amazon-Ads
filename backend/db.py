@@ -11,6 +11,7 @@ from sqlalchemy import (
     Text,
     create_engine,
 )
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker, Session
 
 
@@ -20,7 +21,13 @@ if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is required (PostgreSQL connection string).")
 
 
-engine = create_engine(DATABASE_URL, echo=False, future=True)
+engine = create_engine(
+    DATABASE_URL,
+    echo=False,
+    future=True,
+    pool_pre_ping=True,
+    pool_recycle=300,
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
@@ -98,15 +105,23 @@ def get_tokens() -> Optional[AmazonAdsToken]:
 
 
 def save_tokens(access_token: str, refresh_token: str, expires_at: datetime) -> None:
-    with get_session() as db:
-        token = db.query(AmazonAdsToken).first()
-        if token is None:
-            token = AmazonAdsToken()
-            db.add(token)
-        token.access_token = access_token
-        token.refresh_token = refresh_token
-        token.expires_at = expires_at
-        db.commit()
+    def _save_once() -> None:
+        with get_session() as db:
+            token = db.query(AmazonAdsToken).first()
+            if token is None:
+                token = AmazonAdsToken()
+                db.add(token)
+            token.access_token = access_token
+            token.refresh_token = refresh_token
+            token.expires_at = expires_at
+            db.commit()
+
+    try:
+        _save_once()
+    except OperationalError:
+        # Recover from transient/stale SSL DB connections on hosted platforms.
+        engine.dispose()
+        _save_once()
 
 
 def get_or_create_default_user_id() -> int:
