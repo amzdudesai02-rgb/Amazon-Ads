@@ -2,8 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Amazon Ads API Access – amzDUDES</title>
+    <title>Amazon Ads MCP (Kiro) – amzDUDES</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Configure Amazon Advertising AI MCP with Kiro: endpoint, headers, and settings file locations." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -41,15 +42,19 @@
         .header-nav a { padding: 0.75rem 1rem; font-size: 0.9375rem; }
         .header-nav .btn-primary { margin-left: 0; margin-top: 0.25rem; }
       }
-      .container { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
+      .container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem; }
       .card { background: white; border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 2rem; margin-bottom: 1.5rem; border: 1px solid var(--border); }
       .card h1 { margin: 0 0 0.5rem; font-size: 1.5rem; font-weight: 700; }
       .card h2 { margin: 1.75rem 0 0.5rem; font-size: 1.125rem; font-weight: 600; }
+      .card h3 { margin: 1.25rem 0 0.5rem; font-size: 1rem; font-weight: 600; }
       .card p, .card ul { margin: 0 0 0.75rem; color: var(--text-muted); font-size: 0.9375rem; }
       .card ul { padding-left: 1.5rem; }
-      .card .note { background: #fffbeb; border-left: 4px solid var(--accent); padding: 0.75rem 1rem; margin: 1rem 0; font-size: 0.875rem; border-radius: 0 8px 8px 0; }
+      .card .note { background: #fffbeb; border-left: 4px solid var(--accent); padding: 0.75rem 1rem; margin: 1rem 0; font-size: 0.875rem; border-radius: 0 8px 8px 0; color: var(--text); }
       .card a { color: var(--accent); text-decoration: none; font-weight: 500; }
       .card a:hover { text-decoration: underline; }
+      .card pre { background: #0f172a; color: #e2e8f0; padding: 1rem 1.25rem; border-radius: 8px; overflow-x: auto; font-size: 0.8125rem; line-height: 1.55; margin: 0.5rem 0 0; border: 1px solid #1e293b; }
+      .card code { background: #f1f5f9; color: #0f172a; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.85em; }
+      .card pre code { background: transparent; color: inherit; padding: 0; font-size: inherit; }
       .footer { text-align: center; padding: 1.5rem; font-size: 0.8125rem; color: var(--text-muted); border-top: 1px solid var(--border); }
       .footer a { color: var(--accent); text-decoration: none; font-weight: 500; }
     </style>
@@ -69,8 +74,8 @@
         <a href="/media-plan.html">Media Plan</a>
         <a href="/creative-agent.html">Creative Agent</a>
         <a href="/ai-solutions.html">AI Solutions</a>
-        <a href="/api-access.html" class="active">API Access</a>
-        <a href="/mcp.html">MCP</a>
+        <a href="/api-access.html">API Access</a>
+        <a href="/mcp.html" class="active">MCP</a>
         <a href="/privacy.html">Privacy</a>
         <a href="/about.html">About</a>
         <a href="/login.html">Login</a>
@@ -80,52 +85,73 @@
 
     <main class="container">
       <div class="card">
-        <h1>Access the Amazon Ads API</h1>
-        <p>If you’re an admin, you can apply for and access the Amazon Ads API.</p>
-        <p>To link your <strong>Login with Amazon (LWA)</strong> application to the Partner Network, the signed-in user must have <strong>admin user role</strong> on both the Partner Network and the LWA app. Associates can’t apply for or link existing API credentials.</p>
-        <p>You’re not required to apply for Amazon Ads API access to complete your Partner Network registration. If your company already has API access, linking your Partner Network account will allow automatic mapping of your advertisers and ensure we use the correct information when assigning product verifications.</p>
+        <h1>Amazon Ads MCP in Kiro</h1>
+        <p>
+          Amazon exposes a <strong>Model Context Protocol (MCP)</strong> server for <strong>Amazon Advertising AI</strong>, which tools like <strong>Kiro</strong> can use to call advertising capabilities with your credentials.
+          This page summarizes how to point Kiro at the MCP endpoint and which headers and IDs you need. It mirrors Amazon’s public guidance; always refer to the latest docs in the
+          <a href="https://advertising.amazon.com/API/docs" target="_blank" rel="noopener">Amazon Ads API documentation</a> for authoritative details.
+        </p>
       </div>
 
       <div class="card">
-        <h2>To apply for Amazon Ads API access</h2>
-        <ol style="padding-left: 1.5rem; margin: 0 0 1rem; color: var(--text-muted); font-size: 0.9375rem;">
-          <li style="margin-bottom: 0.5rem;"><strong>Create your Login with Amazon application</strong></li>
-          <li style="margin-bottom: 0.5rem;"><strong>Apply for Amazon Ads API access</strong> — this can be done in the Partner Network.</li>
-          <li style="margin-bottom: 0.5rem;"><strong>Assign API access to a Login with Amazon application</strong></li>
-          <li style="margin-bottom: 0.5rem;"><strong>Create an authorization grant</strong></li>
-        </ol>
-        <p>After that, you can <a href="https://advertising.amazon.com/API/docs" target="_blank" rel="noopener">use the Amazon Advertising API docs</a> and configure this app with your LWA Client ID, Client Secret, and Redirect URI.</p>
+        <h2>MCP server URL</h2>
+        <p>Use this as the MCP endpoint in your client:</p>
+        <pre><code>https://advertising-ai.amazon.com/mcp</code></pre>
       </div>
 
       <div class="card">
-        <h2>Troubleshoot the Amazon Ads API</h2>
-        <p><a href="https://advertising.amazon.com/API/docs/en-us/support/overview" target="_blank" rel="noopener">Solve common issues with the Amazon Ads API</a> (support overview).</p>
-
-        <h3>I was denied access to the Amazon Ads API. How do I appeal?</h3>
-        <p>Review the Amazon email that explains the reason for denial and the steps to resolve it. In some cases, access may not be granted even after an appeal. Review the <a href="https://advertising.amazon.com/API/docs/en-us/data-policy" target="_blank" rel="noopener">Data Policy</a> before appealing to ensure compliance with terms and conditions. If you need support, contact Amazon through your JIRA support account.</p>
-
-        <h3>I already have access to Amazon Ads APIs through a different account. How do I get access without re-applying?</h3>
-        <p><strong>To get multiple user access:</strong></p>
+        <h2>Prerequisites</h2>
         <ul>
-          <li>Go to <strong>Account access &amp; settings</strong> under the Administration menu.</li>
-          <li>On the <strong>Users</strong> tab, select <strong>Invite user</strong>.</li>
-          <li>Invite the account that already has API access. Enter that user’s name and email, set access to <strong>Admin</strong>, and click <strong>Send invite</strong>. Use the same email that previously obtained API access.</li>
-          <li>The invited account must sign in with that email (the one that already has API access).</li>
-          <li>Once signed in, you can link API access via the <strong>Amazon Ads API</strong> tab by selecting <strong>Link application</strong>. Only users with <strong>admin access in both</strong> the Partner Network and the LWA app can do this.</li>
+          <li><strong>Login with Amazon (LWA)</strong> application (<code>Amazon-Ads-ClientId</code> is your LWA client identifier).</li>
+          <li>Appropriate <strong>Amazon Ads API</strong> access for your advertiser profile.</li>
+          <li>A <strong>short-lived access token</strong> in the form <code>Atza|…</code> (obtain via LWA token exchange; refresh tokens belong only in secure storage, never in docs or repos).</li>
+          <li>Your <strong>Amazon Advertising profile ID</strong> when you need to scope requests to a single profile.</li>
         </ul>
-
-        <h3>I need Amazon Ads API support. Who can I contact?</h3>
-        <p>An admin of your Partner Network account should contact support via the <a href="https://advertising.amazon.com/API/docs/en-us/support/overview" target="_blank" rel="noopener">support portal</a>. Submit requests using the email that was registered for API access.</p>
+        <p class="note">
+          If a refresh token or access token was ever pasted into chat, email, or a public repo, treat it as compromised and <strong>rotate</strong> it in the LWA console.
+        </p>
       </div>
 
       <div class="card">
-        <h2>Important: Email safe sender list</h2>
-        <p class="note">Add these addresses to your email safe sender list so Amazon’s messages are not marked as spam:</p>
+        <h2>HTTP headers</h2>
+        <p>Typical headers sent with MCP requests:</p>
         <ul>
-          <li><code>ads-api-support@amazon.com</code></li>
-          <li><code>ads-api-onboarding@amazon.com</code></li>
-          <li><code>support@amazon-ads-api.zendesk.com</code></li>
+          <li><code>Authorization: Bearer Atza|&lt;access_token&gt;</code></li>
+          <li><code>Amazon-Ads-ClientId: &lt;your LWA client id&gt;</code></li>
+          <li>Optional: <code>Amazon-Advertising-API-Scope: &lt;profile_id&gt;</code> to pin a profile.</li>
+          <li>Optional: <code>Amazon-Ads-AI-Account-Selection-Mode: FIXED</code> when using a fixed profile scope (per Amazon’s MCP guidance).</li>
         </ul>
+      </div>
+
+      <div class="card">
+        <h2>Kiro settings file</h2>
+        <p>On many setups, Kiro reads MCP configuration from a JSON file in your user settings directory:</p>
+        <ul>
+          <li><strong>Windows:</strong> <code>%USERPROFILE%\.kiro\settings\mcp.json</code></li>
+          <li><strong>macOS / Linux:</strong> <code>~/.kiro/settings/mcp.json</code></li>
+        </ul>
+        <p>Replace placeholders with your own values. Do not commit real tokens.</p>
+        <pre><code>{
+  "mcpServers": {
+    "amazon-advertising-ai": {
+      "url": "https://advertising-ai.amazon.com/mcp",
+      "headers": {
+        "Authorization": "Bearer Atza|YOUR_ACCESS_TOKEN",
+        "Amazon-Ads-ClientId": "YOUR_LWA_CLIENT_ID",
+        "Amazon-Advertising-API-Scope": "YOUR_PROFILE_ID",
+        "Amazon-Ads-AI-Account-Selection-Mode": "FIXED"
+      }
+    }
+  }
+}</code></pre>
+        <p>
+          Exact JSON shape may vary by Kiro version; align field names with what your editor expects for “remote MCP” or “HTTP” servers.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Related</h2>
+        <p>For Partner Network API onboarding and LWA linking, see <a href="/api-access.html">API Access</a>. For this site’s OAuth connection (separate from MCP file editing), use <strong>Connect Amazon Ads</strong> in the header.</p>
       </div>
     </main>
 
